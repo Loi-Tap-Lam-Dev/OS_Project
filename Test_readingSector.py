@@ -7,7 +7,7 @@ def main():  # Read the first sector of the first disk as example.
     """Demo usage of function."""
     if os.name == "nt":
         # Windows based OS normally uses '\\.\physicaldriveX' for disk drive identification.
-        print(read_sector(r"\\.\\D:"))
+        print(read_sector(r"\\.\D:"))
     else:
         # Linux based OS normally uses '/dev/diskX' for disk drive identification.
         print(read_sector("/dev/disk0"))
