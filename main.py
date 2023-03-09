@@ -1,24 +1,12 @@
 import Data
-import Test_readingSector
+import os
 
 def main():
-    drive = 3
-    BOOT  = Data.BootSectorFAT32()
-    #file = Test_readingSector.read_sector(drive)
-    BOOT.ReadBootSector(r"\\.\D:")
-    # if(res != 0):
-    #     print("Error: ", res)
-    #     return
-    print ("Reading disk parameters...")
-    print ("Bytes per sector: ", BOOT.bytePerSector)
-    print ("Sectors per cluster: ", BOOT.sectorPerCluster)
-    print ("Sectors before FAT: ", BOOT.sectorBeforeFAT)
-    print ("Number of FATs: ", BOOT.cntFAT)
-    print ("Size of volume: ", BOOT.sizeVol)
-    print ("Sectors per FAT: ", BOOT.sectorPerFAT)
-    print ("First cluster in RDET: ", BOOT.firstClusterinRDET)
-    print ("FAT type: ", BOOT.FATtype)
-    print ("Reading root directory entries...")
+    drive = r"\\.\D:"
+    print ("Reading boot sector...")
+    BOOT = Data.BootSectorFAT32()
+    res = BOOT.ReadBootSector(drive)
+    BOOT.PrintBootSector()
     # RDET = Data.RDET()
     # res = absread(drive, BOOT.firstClusterinRDET, 1, RDET)
     # if(res != 0):
@@ -44,3 +32,4 @@ def main():
     # print ("Done!")
     
     
+main()
