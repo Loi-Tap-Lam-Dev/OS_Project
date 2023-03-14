@@ -1,4 +1,5 @@
 import binascii
+import struct
 class BootSectorFAT32:
     def __init__(self) -> None:
         self.bytePerSector = 0
@@ -66,7 +67,8 @@ class MBR:
         print("Start Sector: ", hex(int(self.startSector)))
         print("Total Sector: ", self.totalSector)
 class RDET:
-    def __init__(self) -> None:
+    def __init__(self, firstByteAddress) -> None:
+        self.firstByteAddress = firstByteAddress
         self.name =0
         self.attr =0
         self.reserved =0
@@ -77,6 +79,14 @@ class RDET:
         self.lastWriteTime =0
         self.lastWriteDate =0
         self.size = 0
-    #def readRDET(self, drive, startCluster, bytePerSector, sectorPerCluster):  
+    def readRDET(self, drive): 
+        with open(drive, 'rb') as fp:
+            fp.read(self.firstByteAddress)
+            
+            entry = bytearray()
+            entry = fp.read(32)
+            
+            
+            
         
     
