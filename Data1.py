@@ -211,6 +211,7 @@ class RDET:
         self.createTime = 0
         self.createDate = 0
         self.size = 0
+        self.tempName = ""
     def ReadMainEntry(self, address, drive, fp):
                 #seek(1,0) -> ten chinh
                 #read tung byte
@@ -262,19 +263,19 @@ class RDET:
             #read(10) -> 5 ky tu cua ten file utf-16
             for i in range(5):
                 eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.name += chr(eachName)
+                self.tempName += chr(eachName)
             #seek(3)
             fp.seek(3,1)
             #read(12)-> 6 ky tu ten file
             for i in range(6):
                 eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.name += chr(eachName)
+                self.tempName += chr(eachName)
             #seek(2)
             fp.seek(2,1)
             #read(4) -> 2 ky tu ten file
             for i in range(2):
                 eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.name += chr(eachName)
+                self.tempName += chr(eachName)
                 
     def PrintRDET(self):
         print("Name: ", self.name)
@@ -307,15 +308,15 @@ class RDET:
                 
                 if first_Byte_Main_Entry == 0: break
                 
-                if  first_Byte_Main_Entry == 0x0F:
+                if  first_Byte_Main_Entry == 15:
                     self.ReadExtraEntry(address, drive, fp)
+                    self.name = self.tempName + self.name
+                    self.tempName = ""
                 else:
                     self.ReadMainEntry(address, drive, fp)
-                    
+                    self.PrintRDET()
+                    self.setNull()
                 address += 32
-                
-                self.PrintRDET()
-                self.setNull()
     # def PrintRDET(self):
     #     print("Name: ", self.name)
     #     # print("Bit Pattern of Attribute: ", self.attr_Bin)

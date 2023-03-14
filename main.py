@@ -1,5 +1,6 @@
 import os
 import Data1
+import Data
 
 
 def main():
@@ -18,34 +19,10 @@ def main():
     #print(hex(RDET_Address))
     print ("\n")
     
-    RDET = Data1.RDET()
+    RDET = Data.RDET()
     # 1 entry = 32 bytes
     res1 = RDET.ReadRDET(RDET_Address,drive)
     RDET.PrintRDET()
-    
-    # RDET = Data.RDET()
-    # res = absread(drive, BOOT.firstClusterinRDET, 1, RDET)
-    # if(res != 0):
-    #     print("Error: ", res)
-    #     return
-    # print ("Name: ", RDET.name)
-    # print ("Attribute: ", RDET.attr)
-    # print ("Reserved: ", RDET.reserved)
-    # print ("Create time: ", RDET.createTime)
-    # print ("Create date: ", RDET.createDate)
-    # print ("Last access date: ", RDET.lastAccessDate)
-    # print ("First cluster: ", RDET.firstCluster)
-    # print ("Last write time: ", RDET.lastWriteTime)
-    # print ("Last write date: ", RDET.lastWriteDate)
-    # print ("Size: ", RDET.size)
-    # print ("Reading file...")
-    # file = Data.File()
-    # res = absread(drive, RDET.firstCluster, 1, file)
-    # if(res != 0):
-    #     print("Error: ", res)
-    #     return
-    # print ("File content: ", file.content)
-    # print ("Done!")
     
     
 main()
