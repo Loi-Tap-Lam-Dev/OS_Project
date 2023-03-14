@@ -206,7 +206,7 @@ class MBR:
 class RDET:
     def __init__(self) -> None:
         self.name = ""
-        self.attr = 0
+        self.attr = ""
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
@@ -234,17 +234,17 @@ class RDET:
                 for i in range(len(bi)):
                     if bi[i] == '1':
                         if i==2:
-                            self.attr = "Archive"
+                            self.attr += "Archive, "
                         elif i==3:
-                            self.attr = "Directory"
+                            self.attr += "Directory, "
                         elif i==4:
-                            self.attr = "Volume Label"
+                            self.attr += "Volume Label, "
                         elif i==5:
-                            self.attr = "System File"
+                            self.attr += "System File, "
                         elif i == 6:
-                            self.attr = "Hidden File"
+                            self.attr += "Hidden File, "
                         elif i==7:
-                            self.attr = "Read Only"
+                            self.attr += "Read Only, "
                 #seek(1) -> seek 1
                 #read(1) -> create time
                 fp.seek(1,1)
@@ -252,7 +252,7 @@ class RDET:
                 self.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
                 #read(4) -> create date time
                 date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
-                self.createDate = str(int(date[0:7],2)) + "/" + str(int(date[7:11],2)) + "/" + str(int(date[11:16],2))
+                self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
                 #seek(10)
                 fp.seek(10,1)
                 #read(4) -> size
@@ -263,7 +263,7 @@ class RDET:
             fp.seek(address,0)
             fp.seek(1,1)
             #read(10) -> 5 ky tu cua ten file utf-16
-            
+ 
             for i in range(5):
                 # eachName  = int.from_bytes(fp.read(2), byteorder='little')
                 eachName = int.from_bytes(fp.read(2), byteorder='little')
@@ -293,7 +293,7 @@ class RDET:
  
     def setNull(self):
         self.name = ""
-        self.attr = 0
+        self.attr = ""
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
@@ -323,4 +323,4 @@ class RDET:
                     self.setNull()
  
                 address += 32
-    
+ 
