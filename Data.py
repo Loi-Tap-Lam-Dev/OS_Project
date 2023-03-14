@@ -16,49 +16,19 @@ class BootSectorFAT32:
             self.bytePerSector = int.from_bytes(fp.read(2), byteorder='little')
             self.sectorPerCluster = int.from_bytes(fp.read(1), byteorder='little')
             self.sectorBeforeFAT = int.from_bytes(fp.read(2), byteorder='little')
-            self.cntFAT = int.from_bytes(fp.read(1), byteorder='little') # 0x11
+            self.cntFAT = int.from_bytes(fp.read(1), byteorder='little') # End At 0x11
             fp.seek(15,1)
             self.sizeVol = int.from_bytes(fp.read(4), byteorder='little')
-            self.sectorPerFAT = int.from_bytes(fp.read(4), byteorder='little') #0x28
+            self.sectorPerFAT = int.from_bytes(fp.read(4), byteorder='little') # End At 0x28
             fp.seek(4,1)
-            self.firstClusterinRDET = int.from_bytes(fp.read(4), byteorder='little') #0x30
+            self.firstClusterinRDET = int.from_bytes(fp.read(4), byteorder='little') #End At 0x30
             fp.seek(34,1)
             #self.FATtypeEach = int.from_bytes(fp.read(8), byteorder='little')
             for i in range(8):
                 self.FATtypeEach = int.from_bytes(fp.read(1), byteorder='little')
                 self.FATtype += chr(self.FATtypeEach )
         return 0
-    # def __init__(self, bytePerSector, sectorPerCluster, sectorBeforeFAT, cntFAT, sizeVol, sectorPerFAT, firstClusterinRDET, FATtype):
-    #     self.bytePerSector=bytePerSector
-    #     self.sectorPerCluster = sectorPerCluster
-    #     self.sectorBeforeFAT = sectorBeforeFAT
-    #     self.cntFAT = cntFAT
-    #     self.sizeVol = sizeVol
-    #     self.sectorPerFAT = sectorPerFAT
-    #     self.firstClusterinRDET=firstClusterinRDET
-    #     self.FATtype = FATtype
-    # def ReadBootSectorNTFS(self, drive):
-    #     with open(drive, 'rb') as fp:
-    #         fp.seek(3)
-    #         self.bytePerSector = int.from_bytes(fp.read(2), byteorder='little')
-    #         self.sectorPerCluster = int.from_bytes(fp.read(1), byteorder='little')
-    #         self.sectorBeforeFAT = int.from_bytes(fp.read(2), byteorder='little')
-    #         self.cntFAT = int.from_bytes(fp.read(1), byteorder='little')
-    #         self.sizeVol = int.from_bytes(fp.read(4), byteorder='little')
-    #         self.sectorPerFAT = int.from_bytes(fp.read(4), byteorder='little')
-    #         self.firstClusterinRDET = int.from_bytes(fp.read(4), byteorder='little')
-    #         self.FATtype = int.from_bytes(fp.read(1), byteorder='little')
-    #     return 0
-    # def ReadBootSectork(self, file):
-    #     file.seek(11)
-    #     self.bytePerSector = int.from_bytes(file.read(2), byteorder='little')
-    #     self.sectorPerCluster = int.from_bytes(file.read(1), byteorder='little')
-    #     self.sectorBeforeFAT = int.from_bytes(file.read(2), byteorder='little')
-    #     self.cntFAT = int.from_bytes(file.read(1), byteorder='little')
-    #     self.sizeVol = int.from_bytes(file.read(4), byteorder='little')
-    #     self.sectorPerFAT = int.from_bytes(file.read(4), byteorder='little')
-    #     self.firstClusterinRDET = int.from_bytes(file.read(4), byteorder='little')
-    #     self.FATtype = int.from_bytes(file.read(1), byteorder='little')
+    
     def PrintBootSector(self):
         print("Byte per sector: ", self.bytePerSector)
         print("Sector per cluster: ", self.sectorPerCluster)
@@ -95,18 +65,17 @@ class MBR:
         print("End Address: ", self.endAdd)
         print("Start Sector: ", hex(int(self.startSector)))
         print("Total Sector: ", self.totalSector)
-
-#class RDET:
-    #def __init__(self) -> None:
-        # self.name = name
-        # self.attr = attr
-        # self.reserved = reserved
-        # self.createTime = createTime
-        # self.createDate = createDate
-        # self.lastAccessDate = lastAccessDate
-        # self.firstCluster = firstCluster
-        # self.lastWriteTime = lastWriteTime
-        # self.lastWriteDate = lastWriteDate
-        # self.size = size
+class RDET:
+    def __init__(self) -> None:
+        self.name = name
+        self.attr = attr
+        self.reserved = reserved
+        self.createTime = createTime
+        self.createDate = createDate
+        self.lastAccessDate = lastAccessDate
+        self.firstCluster = firstCluster
+        self.lastWriteTime = lastWriteTime
+        self.lastWriteDate = lastWriteDate
+        self.size = size
         
     

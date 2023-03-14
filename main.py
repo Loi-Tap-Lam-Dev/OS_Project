@@ -4,17 +4,18 @@ import Data
 
 def main():
     drive = r"\\.\D:"
-    # with open(drive, 'rb') as fp:
-    #     fp.read(446)
-    #     for i in range(int(512 / 16)):
-    #         print (hex(int.from_bytes(fp.read(1), byteorder = 'big')))
-    print ("Reading master boot sector...")
+    
+    print ("Reading boot sector FAT32...")
     BOOT = Data.BootSectorFAT32()
     res = BOOT.ReadBootSector(drive)
     BOOT.PrintBootSector()
-    # BOOT = Data.MBR()
-    # res = BOOT.readMBR(drive)
-    # BOOT.PrintMBR()
+    
+    FAT1_Address = BOOT.sectorBeforeFAT * BOOT.bytePerSector
+    #print(type(FAT1_Address))
+    FAT2_Address = (BOOT.sectorBeforeFAT + BOOT.sectorPerFAT) * BOOT.bytePerSector
+    RDET_Address = (BOOT.sectorBeforeFAT + BOOT.sectorPerFAT * 2) * BOOT.bytePerSector
+    
+    
     # RDET = Data.RDET()
     # res = absread(drive, BOOT.firstClusterinRDET, 1, RDET)
     # if(res != 0):
