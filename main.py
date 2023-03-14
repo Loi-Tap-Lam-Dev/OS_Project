@@ -1,12 +1,20 @@
-import Data
 import os
+import Data
+
 
 def main():
     drive = r"\\.\D:"
-    print ("Reading boot sector...")
+    # with open(drive, 'rb') as fp:
+    #     fp.read(446)
+    #     for i in range(int(512 / 16)):
+    #         print (hex(int.from_bytes(fp.read(1), byteorder = 'big')))
+    print ("Reading master boot sector...")
     BOOT = Data.BootSectorFAT32()
     res = BOOT.ReadBootSector(drive)
     BOOT.PrintBootSector()
+    # BOOT = Data.MBR()
+    # res = BOOT.readMBR(drive)
+    # BOOT.PrintMBR()
     # RDET = Data.RDET()
     # res = absread(drive, BOOT.firstClusterinRDET, 1, RDET)
     # if(res != 0):
