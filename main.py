@@ -14,7 +14,7 @@ def main():
     #print(type(FAT1_Address))
     FAT2_Address = (BOOT.sectorBeforeFAT + BOOT.sectorPerFAT) * BOOT.bytePerSector
     RDET_Address = (BOOT.sectorBeforeFAT + BOOT.sectorPerFAT * 2) * BOOT.bytePerSector
-    
+    #print(RDET_Address)
     
     # RDET = Data.RDET()
     # res = absread(drive, BOOT.firstClusterinRDET, 1, RDET)

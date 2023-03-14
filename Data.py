@@ -67,15 +67,16 @@ class MBR:
         print("Total Sector: ", self.totalSector)
 class RDET:
     def __init__(self) -> None:
-        self.name = name
-        self.attr = attr
-        self.reserved = reserved
-        self.createTime = createTime
-        self.createDate = createDate
-        self.lastAccessDate = lastAccessDate
-        self.firstCluster = firstCluster
-        self.lastWriteTime = lastWriteTime
-        self.lastWriteDate = lastWriteDate
-        self.size = size
+        self.name =0
+        self.attr =0
+        self.reserved =0
+        self.createTime =0
+        self.createDate =0
+        self.lastAccessDate =0
+        self.firstCluster =0
+        self.lastWriteTime =0
+        self.lastWriteDate =0
+        self.size = 0
+    #def readRDET(self, drive, startCluster, bytePerSector, sectorPerCluster):  
         
     
