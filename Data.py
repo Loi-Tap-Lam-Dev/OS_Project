@@ -1,6 +1,7 @@
 import binascii
- 
+
 class BootSectorFAT32:
+    # Initiate Value, Atrribute
     def __init__(self) -> None:
         self.bytePerSector = 0
         self.sectorPerCluster = 0
@@ -11,27 +12,44 @@ class BootSectorFAT32:
         self.firstClusterinRDET = 0
         self.FATtypeEach = 0
         self.FATtype = ""
-        
+    
+    # Read Boot Sector - Read 26 Bytes At First Sector
     def ReadBootSector(self, drive):
+        
         with open(drive, 'rb') as fp:
+            
+            # First we move to Offset 0x0B
             fp.read(11)
-            self.bytePerSector = int.from_bytes(fp.read(2), byteorder='little')
+            
+            # Read: Byte per sector, Sector per cluster, Sector before FAT, Count of FAT
+            self.bytePerSector = int.from_bytes(fp.read(2), byteorder='little') 
             self.sectorPerCluster = int.from_bytes(fp.read(1), byteorder='little')
             self.sectorBeforeFAT = int.from_bytes(fp.read(2), byteorder='little')
-            self.cntFAT = int.from_bytes(fp.read(1), byteorder='little') # End At 0x11
+            self.cntFAT = int.from_bytes(fp.read(1), byteorder='little') # It End At 0x11
+            
+            # Next, we move to Offset 0x20
             fp.seek(15,1)
+            # Read: Size of volume, Sector per FAT
             self.sizeVol = int.from_bytes(fp.read(4), byteorder='little')
             self.sectorPerFAT = int.from_bytes(fp.read(4), byteorder='little') # End At 0x28
+            
+            # Then we move to Offset 0x30
             fp.seek(4,1)
+            # Read: First cluster in RDET
             self.firstClusterinRDET = int.from_bytes(fp.read(4), byteorder='little') #End At 0x30
+            
+            # Final, we move to Offset 0x52
             fp.seek(34,1)
-            #self.FATtypeEach = int.from_bytes(fp.read(8), byteorder='little')
+            
+            # Read: Each Byte of FAT type then convert to ASCII
             for i in range(8):
                 self.FATtypeEach = int.from_bytes(fp.read(1), byteorder='little')
                 self.FATtype += chr(self.FATtypeEach)
+                
         return 0
- 
+
     def PrintBootSector(self):
+        
         print("Byte per sector: ", self.bytePerSector)
         print("Sector per cluster: ", self.sectorPerCluster)
         print("Sector before FAT: ", self.sectorBeforeFAT)
@@ -43,7 +61,7 @@ class BootSectorFAT32:
     
         print("\n")
         
- 
+
 class MBR:
     def __init__(self) -> None:
         self.status = 0
@@ -71,7 +89,8 @@ class MBR:
         print("End Address: ", self.endAdd)
         print("Start Sector: ", hex(int(self.startSector)))
         print("Total Sector: ", self.totalSector)
-class Entry:
+
+class Entry: # These just Object to store data of each Entry
     def __init__(self) -> None:
         self.name = ""
         self.attr = ""
@@ -90,10 +109,12 @@ class Entry:
         self.size = 0
         self.tempName = ""
 class RDET:
+    
+    # We Read Each Entry And Store It In List
     def __init__(self) -> None:
         self.ListEntry = []
         self.EachEntry = None
-        
+    
     def ReadMainEntry(self, address, drive, fp):
                 #seek(1,0) -> ten chinh
                 #read tung byte
@@ -102,7 +123,9 @@ class RDET:
                     for i in range(8):
                         eachName  = int.from_bytes(fp.read(1), byteorder='little')
                         self.EachEntry.name += chr(eachName)
+                        
                     #read(3) -> ten phu
+                    checkExistExtensionName = True
                     self.EachEntry.name += "."
                     for i in range(3):
                         eachName  = int.from_bytes(fp.read(1), byteorder='little')
@@ -176,27 +199,42 @@ class RDET:
             print('\n')
  
     def ReadRDET(self,address, drive):
-        # B1: Offset xxxB (1 byte): kiểm tra xem là entry chính hay phụ từ RDET_address (byte)
-        # seek(RDET_address,0) -> pointer dau bang
-        # seek(11,1)
+        # Step_1: Move to offset xxxB (1 byte): check the type of Entry
+        # Step_2: If it is Main Entry, read 32 bytes
+        # Otherwise, read Extra Entry
+        # Step_3: Move another 32 Byte with Address and repeat Step_1
+        
         with open (drive, 'rb') as fp:
+            TempName = ""
             while True:
-                
+                # New Entry Each Time
                 self.EachEntry = Entry()
+                
+                # Seek each Entry - 32 bytes pattern
                 fp.seek(address,0)
-                fp.read(11)
-                getbinary = lambda x, n: format(x, 'b').zfill(n)
-                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little')
-                #ua nma no ra int ma` 80 ->  :)) 08 la 1 byte no k co doi
-                if first_Byte_Main_Entry == 0: break
+                
+                if int.from_bytes(fp.read(1), byteorder='little') == 0xE5:  
+                    address += 32         
+                    continue
+                # Move to offset 11B (1 byte): check the type of Entry
+                fp.read(10)
+                
+                getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
+                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
+                
+                if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
  
-                if  first_Byte_Main_Entry == 15:
+                if  first_Byte_Main_Entry == 15: # Extra Entry
                     self.ReadExtraEntry(address, drive, fp)
+                    
                     self.EachEntry.name = self.EachEntry.tempName + self.EachEntry.name
-                    self.EachEntry.tempName = ""
+                    TempName = self.EachEntry.name + TempName
                 else:
                     self.ReadMainEntry(address, drive, fp)
+                    if (TempName != ""):
+                        self.EachEntry.name = TempName
+                        TempName = ""
                     self.ListEntry.append(self.EachEntry)
                 address += 32
         return 0
- 
+
