@@ -98,6 +98,7 @@ class Entry: # These just Object to store data of each Entry
         self.createTime = 0
         self.createDate = 0
         self.size = 0
+        self.startCluster = 0
         self.tempName = ""
         
     def setNULL(self):
@@ -106,6 +107,7 @@ class Entry: # These just Object to store data of each Entry
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
+        self.startCluster = 0
         self.size = 0
         self.tempName = ""
 class RDET:
@@ -121,15 +123,17 @@ class RDET:
                 fp.seek(address,0)
                 if(self.EachEntry.name == ""):
                     for i in range(8):
-                        eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.EachEntry.name += chr(eachName)
-                        
+                        eachName  = fp.read(1)
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        if eachName.decode('ascii') != ' ': # If not space
+                            self.EachEntry.name += eachName.decode('ascii')
+                    
                     #read(3) -> ten phu
-                    checkExistExtensionName = True
                     self.EachEntry.name += "."
                     for i in range(3):
-                        eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.EachEntry.name += chr(eachName)
+                        eachName  = fp.read(1)
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        self.EachEntry.name += eachName.decode('ascii')
                 else:
                     fp.seek(11,1)
                 #read(1) -> attribute
@@ -159,9 +163,11 @@ class RDET:
                 date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
                 self.EachEntry.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
                 #seek(10)
-                fp.seek(10,1)
+                fp.seek(8,1)
+                self.EachEntry.startCluster = int.from_bytes(fp.read(2),byteorder='little')
                 #read(4) -> size
                 self.EachEntry.size = int.from_bytes(fp.read(4),byteorder='little')
+                
     #read entry phu
     def ReadExtraEntry(self, address, drive, fp):
             #seek(1)
@@ -170,21 +176,23 @@ class RDET:
             #read(10) -> 5 ky tu cua ten file utf-16
  
             for i in range(5):
-                # eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                eachName = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
+                eachName  = fp.read(2)
+                if eachName.decode('utf-16') != ' ':
+                    self.EachEntry.tempName += eachName.decode('utf-16')
             #seek(3)
             fp.seek(3,1)
             #read(12)-> 6 ky tu ten file
             for i in range(6):
-                eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
+                eachName = fp.read(2)
+                if eachName.decode('utf-16') != ' ':
+                    self.EachEntry.tempName += eachName.decode('utf-16')
             #seek(2)
             fp.seek(2,1)
             #read(4) -> 2 ky tu ten file
             for i in range(2):
-                eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
+                eachName = fp.read(2)
+                if eachName.decode('utf-16') != ' ':
+                    self.EachEntry.tempName += eachName.decode('utf-16')
  
     def PrintRDET(self):
         
@@ -194,6 +202,7 @@ class RDET:
             print("Attribute: ", i.attr)
             print("Create Time: ", i.createTime)
             print("Create Date: ", i.createDate)
+            print("Start Cluster: ", i.startCluster)
             print("Size: ", i.size)
 
             print('\n')
@@ -223,7 +232,6 @@ class RDET:
                 first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
                 
                 if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
- 
                 if  first_Byte_Main_Entry == 15: # Extra Entry
                     self.ReadExtraEntry(address, drive, fp)
                     
