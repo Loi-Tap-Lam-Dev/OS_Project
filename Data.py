@@ -102,7 +102,7 @@ class Entry: # These just Object to store data of each Entry
         self.startCluster = 0
         self.tempName = ""
         
-        self.NextENTRY = None #IF IT IS A DIRECTORY, IT WILL HAVE NEXT ENTRY
+        self.ListEntry = [] # List of Entry
         
     def setNULL(self):
         self.name = ""
@@ -190,7 +190,46 @@ class Entry: # These just Object to store data of each Entry
                 if eachName != b'\xff\xff':
                     self.tempName += eachName.decode('utf-16')
 
-    
+    def ReadDET(self,address, drive):
+        # Step_1: Move to offset xxxB (1 byte): check the type of Entry
+        # Step_2: If it is Main Entry, read 32 bytes
+        # Otherwise, read Extra Entry
+        # Step_3: Move another 32 Byte with Address and repeat Step_1
+        
+        with open (drive, 'rb') as fp:
+            TempName = ""
+            while True:
+                # New Entry Each Time
+                EachEntry = Entry()
+                
+                # Seek each Entry - 32 bytes pattern
+                fp.seek(address,0)
+                
+                if int.from_bytes(fp.read(1), byteorder='little') == 0xE5:  
+                    address += 32         
+                    continue
+                # Move to offset 11B (1 byte): check the type of Entry
+                fp.read(10)
+                
+                getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
+                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
+                
+                if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
+                if  first_Byte_Main_Entry == 15: # Extra Entry
+                    EachEntry.ReadExtraEntry(address, drive, fp)
+                    
+                    EachEntry.name = EachEntry.tempName + EachEntry.name
+                    TempName = EachEntry.name + TempName
+                else:
+                    EachEntry.ReadMainEntry(address, drive, fp)
+                    if len(TempName) > 8:
+                        EachEntry.name = TempName
+                    TempName = ""
+                    self.ListEntry.append(EachEntry)
+                    
+                address += 32
+        return 0
+
     def PrintAttribute(self):
         
         print("Name: ", self.name)
@@ -207,51 +246,16 @@ class RDET:
     
     # We Read Each Entry And Store It In List
     def __init__(self) -> None:
-        self.ListEntry = []
-        self.EachEntry = None
+        self.RootEntry = Entry()
 
     def PrintRDET(self):
 
-        for i in self.ListEntry:
+        for i  in self.RootEntry.ListEntry:
             i.PrintAttribute()
     
     def ReadRDET(self,address, drive):
-        # Step_1: Move to offset xxxB (1 byte): check the type of Entry
-        # Step_2: If it is Main Entry, read 32 bytes
-        # Otherwise, read Extra Entry
-        # Step_3: Move another 32 Byte with Address and repeat Step_1
         
-        with open (drive, 'rb') as fp:
-            TempName = ""
-            while True:
-                # New Entry Each Time
-                self.EachEntry = Entry()
-                
-                # Seek each Entry - 32 bytes pattern
-                fp.seek(address,0)
-                
-                if int.from_bytes(fp.read(1), byteorder='little') == 0xE5:  
-                    address += 32         
-                    continue
-                # Move to offset 11B (1 byte): check the type of Entry
-                fp.read(10)
-                
-                getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
-                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
-                
-                if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
-                if  first_Byte_Main_Entry == 15: # Extra Entry
-                    self.EachEntry.ReadExtraEntry(address, drive, fp)
-                    
-                    self.EachEntry.name = self.EachEntry.tempName + self.EachEntry.name
-                    TempName = self.EachEntry.name + TempName
-                else:
-                    self.EachEntry.ReadMainEntry(address, drive, fp)
-                    if len(TempName) > 8:
-                        self.EachEntry.name = TempName
-                    TempName = ""
-                    self.ListEntry.append(self.EachEntry)
-                    
-                address += 32
+        self.RootEntry.ReadDET(address, drive)
+        
         return 0
 

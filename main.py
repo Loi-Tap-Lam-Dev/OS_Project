@@ -28,8 +28,12 @@ def main():
     res = RDET.ReadRDET(RDET_Address, drive)
     RDET.PrintRDET()
     
-    # for x in RDET.ListEntry:
-    #     TempEntry = x
-    #     TempEntry.PrintAttribute()
+    x = RDET.RootEntry.ListEntry[5] # Access to the 3rd entry in the RDET
+    x.PrintAttribute()
+    EntryInsideDir_Address = (x.startCluster - 2 ) * BOOT.sectorPerCluster * BOOT.bytePerSector + RDET_Address
+    print("EntryInsideDir_Address: ", EntryInsideDir_Address)
+    x.ReadDET(EntryInsideDir_Address, drive)
     
+    for i  in x.ListEntry:
+            i.PrintAttribute()
 main()
