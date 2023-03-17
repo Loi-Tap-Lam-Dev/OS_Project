@@ -93,7 +93,7 @@ class Entry: # These just Object to store data of each Entry
 
     def __init__(self) -> None:
         self.name = ""
-        self.attr = ""
+        self.attr = ["NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL"]
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
@@ -117,7 +117,7 @@ class Entry: # These just Object to store data of each Entry
         
         print("Name: ", self.name)
         #print("Bit Pattern of Attribute: ", self.attr_Bin)
-        print("Attribute: ", self.attr)
+        print("Attribute: ", [i for i in self.attr if i != "NULL"])
         print("Create Time: ", self.createTime)
         print("Create Date: ", self.createDate)
         print("Start Cluster: ", self.startCluster)
@@ -158,17 +158,17 @@ class RDET:
                 for i in range(len(bi)):
                     if bi[i] == '1':
                         if i==2:
-                            self.EachEntry.attr += "Archive, "
+                            self.EachEntry.attr[i] = "Archive"
                         elif i==3:
-                            self.EachEntry.attr += "Directory, "
+                            self.EachEntry.attr[i] = "Directory"
                         elif i==4:
-                            self.EachEntry.attr += "Volume Label, "
+                            self.EachEntry.attr[i] = "Volume Label"
                         elif i==5:
-                            self.EachEntry.attr += "System File, "
+                            self.EachEntry.attr[i] = "System File"
                         elif i == 6:
-                            self.EachEntry.attr += "Hidden File, "
+                            self.EachEntry.attr[i] = "Hidden File"
                         elif i==7:
-                            self.EachEntry.attr += "Read Only, "
+                            self.EachEntry.attr[i] = "Read Only"
                 #seek(1) -> seek 1
                 #read(1) -> create time
                 fp.seek(1,1)
