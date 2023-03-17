@@ -28,4 +28,8 @@ def main():
     res = RDET.ReadRDET(RDET_Address, drive)
     RDET.PrintRDET()
     
+    # for x in RDET.ListEntry:
+    #     TempEntry = x
+    #     TempEntry.PrintAttribute()
+    
 main()

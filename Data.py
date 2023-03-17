@@ -61,7 +61,6 @@ class BootSectorFAT32:
     
         print("\n")
         
-
 class MBR:
     def __init__(self) -> None:
         self.status = 0
@@ -91,6 +90,7 @@ class MBR:
         print("Total Sector: ", self.totalSector)
 
 class Entry: # These just Object to store data of each Entry
+
     def __init__(self) -> None:
         self.name = ""
         self.attr = ""
@@ -101,6 +101,8 @@ class Entry: # These just Object to store data of each Entry
         self.startCluster = 0
         self.tempName = ""
         
+        self.NextENTRY = None #IF IT IS A DIRECTORY, IT WILL HAVE NEXT ENTRY
+        
     def setNULL(self):
         self.name = ""
         self.attr = ""
@@ -110,6 +112,19 @@ class Entry: # These just Object to store data of each Entry
         self.startCluster = 0
         self.size = 0
         self.tempName = ""
+
+    def PrintAttribute(self):
+        
+        print("Name: ", self.name)
+        #print("Bit Pattern of Attribute: ", self.attr_Bin)
+        print("Attribute: ", self.attr)
+        print("Create Time: ", self.createTime)
+        print("Create Date: ", self.createDate)
+        print("Start Cluster: ", self.startCluster)
+        print("Size: ", self.size)
+
+        print('\n')
+
 class RDET:
     
     # We Read Each Entry And Store It In List
@@ -193,20 +208,12 @@ class RDET:
                 eachName = fp.read(2)
                 if eachName.decode('utf-16') != ' ':
                     self.EachEntry.tempName += eachName.decode('utf-16')
- 
-    def PrintRDET(self):
-        
-        for i in self.ListEntry:
-            print("Name: ", i.name)
-            #print("Bit Pattern of Attribute: ", i.attr_Bin)
-            print("Attribute: ", i.attr)
-            print("Create Time: ", i.createTime)
-            print("Create Date: ", i.createDate)
-            print("Start Cluster: ", i.startCluster)
-            print("Size: ", i.size)
 
-            print('\n')
- 
+    def PrintRDET(self):
+
+        for i in self.ListEntry:
+            i.PrintAttribute()
+    
     def ReadRDET(self,address, drive):
         # Step_1: Move to offset xxxB (1 byte): check the type of Entry
         # Step_2: If it is Main Entry, read 32 bytes
