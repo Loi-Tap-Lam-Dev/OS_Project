@@ -94,6 +94,7 @@ class Entry: # These just Object to store data of each Entry
     def __init__(self) -> None:
         self.name = ""
         self.attr = ["NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL"]
+        #              X       X      ARCH    DIR     VOL    SYSTEM   HIDDEN  READONLY
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
@@ -113,6 +114,83 @@ class Entry: # These just Object to store data of each Entry
         self.size = 0
         self.tempName = ""
 
+    def ReadMainEntry(self, address, drive, fp):
+                #seek(1,0) -> ten chinh
+                #read tung byte
+                fp.seek(address,0)
+                if(self.name == ""):
+                    for i in range(8):
+                        eachName  = fp.read(1)
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        if eachName.decode('ascii') != ' ': # If not space
+                            self.name += eachName.decode('ascii')
+                    
+                    #read(3) -> ten phu
+                    self.name += "."
+                    for i in range(3):
+                        eachName  = fp.read(1)
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        self.name += eachName.decode('ascii')
+                else:
+                    fp.seek(11,1)
+                #read(1) -> attribute
+                getbinary = lambda x, n: format(x, 'b').zfill(n)
+                self.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
+                bi = self.attr_Bin
+                for i in range(len(bi)):
+                    if bi[i] == '1':
+                        if i==2:
+                            self.attr[i] = "Archive"
+                        elif i==3:
+                            self.attr[i] = "Directory"
+                        elif i==4:
+                            self.attr[i] = "Volume Label"
+                        elif i==5:
+                            self.attr[i] = "System File"
+                        elif i == 6:
+                            self.attr[i] = "Hidden File"
+                        elif i==7:
+                            self.attr[i] = "Read Only"
+                #seek(1) -> seek 1
+                #read(1) -> create time
+                fp.seek(1,1)
+                time = getbinary((int.from_bytes(fp.read(3),'little')), 24)
+                self.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
+                #read(4) -> create date time
+                date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
+                self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
+                #seek(10)
+                fp.seek(8,1)
+                self.startCluster = int.from_bytes(fp.read(2),byteorder='little')
+                #read(4) -> size
+                self.size = int.from_bytes(fp.read(4),byteorder='little')
+
+    def ReadExtraEntry(self, address, drive, fp):
+            #seek(1)
+            fp.seek(address,0)
+            fp.seek(1,1)
+            #read(10) -> 5 ky tu cua ten file utf-16
+ 
+            for i in range(5):
+                eachName  = fp.read(2)
+                if eachName != b'\xff\xff':
+                    self.tempName += eachName.decode('utf-16')
+            #seek(3)
+            fp.seek(3,1)
+            #read(12)-> 6 ky tu ten file
+            for i in range(6):
+                eachName = fp.read(2)
+                if eachName != b'\xff\xff':
+                    self.tempName += eachName.decode('utf-16')
+            #seek(2)
+            fp.seek(2,1)
+            #read(4) -> 2 ky tu ten file
+            for i in range(2):
+                eachName = fp.read(2)
+                if eachName != b'\xff\xff':
+                    self.tempName += eachName.decode('utf-16')
+
+    
     def PrintAttribute(self):
         
         print("Name: ", self.name)
@@ -131,83 +209,6 @@ class RDET:
     def __init__(self) -> None:
         self.ListEntry = []
         self.EachEntry = None
-    
-    def ReadMainEntry(self, address, drive, fp):
-                #seek(1,0) -> ten chinh
-                #read tung byte
-                fp.seek(address,0)
-                if(self.EachEntry.name == ""):
-                    for i in range(8):
-                        eachName  = fp.read(1)
-                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        if eachName.decode('ascii') != ' ': # If not space
-                            self.EachEntry.name += eachName.decode('ascii')
-                    
-                    #read(3) -> ten phu
-                    self.EachEntry.name += "."
-                    for i in range(3):
-                        eachName  = fp.read(1)
-                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.EachEntry.name += eachName.decode('ascii')
-                else:
-                    fp.seek(11,1)
-                #read(1) -> attribute
-                getbinary = lambda x, n: format(x, 'b').zfill(n)
-                self.EachEntry.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
-                bi = self.EachEntry.attr_Bin
-                for i in range(len(bi)):
-                    if bi[i] == '1':
-                        if i==2:
-                            self.EachEntry.attr[i] = "Archive"
-                        elif i==3:
-                            self.EachEntry.attr[i] = "Directory"
-                        elif i==4:
-                            self.EachEntry.attr[i] = "Volume Label"
-                        elif i==5:
-                            self.EachEntry.attr[i] = "System File"
-                        elif i == 6:
-                            self.EachEntry.attr[i] = "Hidden File"
-                        elif i==7:
-                            self.EachEntry.attr[i] = "Read Only"
-                #seek(1) -> seek 1
-                #read(1) -> create time
-                fp.seek(1,1)
-                time = getbinary((int.from_bytes(fp.read(3),'little')), 24)
-                self.EachEntry.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
-                #read(4) -> create date time
-                date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
-                self.EachEntry.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
-                #seek(10)
-                fp.seek(8,1)
-                self.EachEntry.startCluster = int.from_bytes(fp.read(2),byteorder='little')
-                #read(4) -> size
-                self.EachEntry.size = int.from_bytes(fp.read(4),byteorder='little')
-                
-    #read entry phu
-    def ReadExtraEntry(self, address, drive, fp):
-            #seek(1)
-            fp.seek(address,0)
-            fp.seek(1,1)
-            #read(10) -> 5 ky tu cua ten file utf-16
- 
-            for i in range(5):
-                eachName  = fp.read(2)
-                if eachName.decode('utf-16') != ' ':
-                    self.EachEntry.tempName += eachName.decode('utf-16')
-            #seek(3)
-            fp.seek(3,1)
-            #read(12)-> 6 ky tu ten file
-            for i in range(6):
-                eachName = fp.read(2)
-                if eachName.decode('utf-16') != ' ':
-                    self.EachEntry.tempName += eachName.decode('utf-16')
-            #seek(2)
-            fp.seek(2,1)
-            #read(4) -> 2 ky tu ten file
-            for i in range(2):
-                eachName = fp.read(2)
-                if eachName.decode('utf-16') != ' ':
-                    self.EachEntry.tempName += eachName.decode('utf-16')
 
     def PrintRDET(self):
 
@@ -240,16 +241,17 @@ class RDET:
                 
                 if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
                 if  first_Byte_Main_Entry == 15: # Extra Entry
-                    self.ReadExtraEntry(address, drive, fp)
+                    self.EachEntry.ReadExtraEntry(address, drive, fp)
                     
                     self.EachEntry.name = self.EachEntry.tempName + self.EachEntry.name
                     TempName = self.EachEntry.name + TempName
                 else:
-                    self.ReadMainEntry(address, drive, fp)
-                    if (TempName != ""):
+                    self.EachEntry.ReadMainEntry(address, drive, fp)
+                    if len(TempName) > 8:
                         self.EachEntry.name = TempName
-                        TempName = ""
+                    TempName = ""
                     self.ListEntry.append(self.EachEntry)
+                    
                 address += 32
         return 0
 
