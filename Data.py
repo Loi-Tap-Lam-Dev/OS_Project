@@ -225,7 +225,8 @@ class Entry: # These just Object to store data of each Entry
                     if len(TempName) > 8:
                         EachEntry.name = TempName
                     TempName = ""
-                    self.ListEntry.append(EachEntry)
+                    if (EachEntry.name[0] != '.' and EachEntry.name[1] != '.'):
+                        self.ListEntry.append(EachEntry)
                     
                 address += 32
         return 0
