@@ -172,23 +172,23 @@ class Entry: # These just Object to store data of each Entry
             #read(10) -> 5 ky tu cua ten file utf-16
  
             for i in range(5):
-                eachName  = fp.read(2)
-                if eachName != b'\xff\xff':
-                    self.tempName += eachName.decode('utf-16')
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
             #seek(3)
             fp.seek(3,1)
             #read(12)-> 6 ky tu ten file
             for i in range(6):
-                eachName = fp.read(2)
-                if eachName != b'\xff\xff':
-                    self.tempName += eachName.decode('utf-16')
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
             #seek(2)
             fp.seek(2,1)
             #read(4) -> 2 ky tu ten file
             for i in range(2):
-                eachName = fp.read(2)
-                if eachName != b'\xff\xff':
-                    self.tempName += eachName.decode('utf-16')
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
 
     def ReadDET(self,address, drive):
         # Step_1: Move to offset xxxB (1 byte): check the type of Entry
