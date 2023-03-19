@@ -120,17 +120,17 @@ class Entry: # These just Object to store data of each Entry
                 fp.seek(address,0)
                 if(self.name == ""):
                     for i in range(8):
-                        eachName  = fp.read(1)
+                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
                         #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        if eachName.decode('ascii') != ' ': # If not space
-                            self.name += eachName.decode('ascii')
+                        if chr(eachName) != ' ': # If not space
+                            self.name += chr(eachName)
                     
                     #read(3) -> ten phu
                     self.name += "."
                     for i in range(3):
-                        eachName  = fp.read(1)
+                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
                         #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.name += eachName.decode('ascii')
+                        self.name += chr(eachName)
                 else:
                     fp.seek(11,1)
                 #read(1) -> attribute
