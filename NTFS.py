@@ -49,7 +49,6 @@ class Attribute: #type,size,
         self.NonResidentFlag = 0
         self.LengthOfContent = 0
         self.OffsetToContent = 0
-        self.BackupSizeOfContent = 0
         self.content = Content()
     # def __init__(self, type, name, size, data):
     #     self.type = type
@@ -144,6 +143,8 @@ class MFTEntry:
     def ReadMFTEntry(self,fp):
         if(int.from_bytes(fp.read(1024)) != 0):
             fp.seek(-1024,1)
+        else:
+            return
         for i in range(4):
             temp = fp.read(1)
             self.MFTEntry += temp.decode('ascii')
@@ -184,13 +185,14 @@ class MFT:
         while(True):
             temp = MFTEntry()
             temp.ReadMFTEntry(fp)
-            self.MFT.append(temp)
             if(temp.MFTEntry == 'FILE'):
+                self.MFT.append(temp)
                 continue
             elif(temp.MFTEntry == 'BAAD'):
+                self.MFT.append(temp)
                 continue
             else:
-                break
+                continue
         return self
     def PrintMFT(self):
         for i in range(len(self.MFT)):
@@ -202,18 +204,21 @@ class MFT:
             print("Size of MFT Entry: ",self.MFT[i].SizeofMFTE)
             print("ID of MFT Entry: ",self.MFT[i].IDofMFTEntry)
             for j in range(len(self.MFT[i].attributes)):
+                self.typeHeader = ''
                 print("Attribute: ",j)
                 print("Type Header: ",self.MFT[i].attributes[j].typeHeader)
-                print("Length of Attribute: ",self.MFT[i].attributes[j].lengthofAttribute)
-                print("Nonresident: ",self.MFT[i].attributes[j].nonresident)
-                print("Length of Name: ",self.MFT[i].attributes[j].lengthofName)
-                print("Offset to Name: ",self.MFT[i].attributes[j].offsettoName)
-                print("Flags: ",self.MFT[i].attributes[j].flags)
-                print("Attribute ID: ",self.MFT[i].attributes[j].attributeID)
-                print("Length of Content: ",self.MFT[i].attributes[j].lengthofContent)
-                print("Offset to Content: ",self.MFT[i].attributes[j].offsettoContent)
-                print("Indexed Flag: ",self.MFT[i].attributes[j].indexedFlag)
-                print("Content: ",self.MFT[i].attributes[j].content)
+                print("Length of Attribute: ",self.MFT[i].attributes[j].SizeOfAttributeIncludeHeader)
+                print("Nonresident: ",self.MFT[i].attributes[j].NonResidentFlag)
+                print("Length of Name: ",self.MFT[i].attributes[j].LengthOfContent)
+                print("Offset to Name: ",self.MFT[i].attributes[j].OffsetToContent)
+                if(self.MFT[i].attributes[j].typeHeader == 'STANDARD_INFORMATION'):
+                    print("Creation Time: ",self.MFT[i].attributes[j].content.standard_information.create_time)
+                    print("Last Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_modification_time)
+                    print("Last MFT Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_mft_modification_time)
+                    print("Last Accessed Time: ",self.MFT[i].attributes[j].content.standard_information.last_access_time)
+                if(self.MFT[i].attributes[j].typeHeader == 'FILE_NAME'):
+                    print("Parent Directory: ",self.MFT[i].attributes[j].content.file_name.IdRootParentDirectory)
+                    print("Name: ",self.MFT[i].attributes[j].content.file_name.Name)
             print("")
 class VBR:
     def __init__(self) -> None:

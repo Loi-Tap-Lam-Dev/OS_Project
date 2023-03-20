@@ -11,6 +11,7 @@ def main():
         BOOT = NTFS.VBR()
         BOOT.ReadVBR(drive,fp)
         BOOT.PrintVBR()
+        print("-----------------------")
         MFTAddress = BOOT.FirstClusterInMFT * BOOT.BytesPerSector * BOOT.SectorPerCluster
         MFT = NTFS.MFT()
         MFT.ReadMFT(drive,fp,MFTAddress)
@@ -35,5 +36,5 @@ def main():
     # RDET = Data.RDET()
     # res = RDET.ReadRDET(RDET_Address, drive)
     # RDET.PrintRDET()
-    
+
 main()
