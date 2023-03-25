@@ -212,10 +212,10 @@ class Entry: # These just Object to store data of each Entry
                 fp.read(10)
                 
                 getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
-                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
+                Entry_Type_Byte = int.from_bytes(fp.read(1), byteorder='little') 
                 
-                if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
-                if  first_Byte_Main_Entry == 15: # Extra Entry
+                if Entry_Type_Byte == 0: break # Empty Entry -> End Of Directory
+                if  Entry_Type_Byte == 15: # Extra Entry
                     EachEntry.ReadExtraEntry(address, drive, fp)
                     
                     EachEntry.name = EachEntry.tempName + EachEntry.name
