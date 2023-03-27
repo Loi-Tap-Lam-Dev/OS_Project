@@ -1,6 +1,7 @@
 import os
 import string
 import Data
+import Layer
 
 def ReadInfoFromBootSector(drive):
     BOOT = Data.BootSectorFAT32()
@@ -57,6 +58,29 @@ def Print_Directory_Tree_v2(Entry,i, str, depth = 0):
     
     return None
 
+def Print_Directory_Tree_v3(Entry,i, str, depth = 0):
+    path = []
+    if depth > 6: return None
+    
+    #print(str + Entry.name, [i for i in Entry.attr if i != "NULL"],'\n')    
+    if Entry.attr[3] == 'Directory' and Entry.attr[4] == 'NULL' and Entry.attr[5] == 'NULL' and Entry.attr[6] == 'NULL' and Entry.attr[7] == 'NULL':
+        for x in Entry.ListEntry:
+            str = ' ' * i 
+            path.append(Print_Directory_Tree_v3(x, i + 5, str + '|' + '-' * 4, depth + 1))
+        dict_path = {Entry.name : path}
+    elif Entry.attr[4] == 'Volume Label' or Entry.attr[5] == 'System File' or Entry.attr[6] == 'Hidden File':
+            return None
+    else: 
+        return Entry.name
+    
+    return dict_path
+
+def GUI(Entry, i, str, depth = 0):
+    file_path = []
+    file_path.append(Print_Directory_Tree_v3(Entry, i, str))
+    y = 1
+    return file_path
+
 def main():
     """ Detect all drive """
     drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
@@ -84,7 +108,11 @@ def main():
         i = 0
         RDET.RootEntry.name = drive[4:]
         RDET.RootEntry.attr[3] = 'Directory'
-        print("Directory Tree: \n")
-        Print_Directory_Tree_v2(RDET.RootEntry, i, "") #Print
+        #print("Directory Tree: \n")
+        #Print_Directory_Tree_v2(RDET.RootEntry, i, "") #Print
+        
+        #Directory Tree Gui
+        file_path = GUI(RDET.RootEntry, i, "")
+        Layer.Display(file_path)
 
 main()
