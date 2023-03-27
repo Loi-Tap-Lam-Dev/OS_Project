@@ -14,7 +14,7 @@ def main():
         print("-----------------------")
         MFTAddress = BOOT.FirstClusterInMFT * BOOT.BytesPerSector * BOOT.SectorPerCluster
         MFT = NTFS.MFT()
-        MFT.ReadMFT(drive,fp,MFTAddress)
+        MFT.ReadMFT(drive,fp,MFTAddress,BOOT.BytesPerSector*BOOT.SectorPerCluster)
         MFT.PrintMFT()
     # """ Boot Sector """
     # print ("Reading boot sector FAT32...")

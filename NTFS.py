@@ -2,6 +2,7 @@ import os
 import datetime
 def as_datetime(windows_timestamp):
     return datetime.datetime.fromtimestamp((windows_timestamp - 116444736000000000) / 10000000)
+SizeMFT = 0
 class ContentOfStandardInformation:
     def __init__(self) -> None:
         # self.major_version = 0
@@ -77,7 +78,13 @@ class Attribute: #type,size,
                 self.typeHeader = "END"
                 return
             self.SizeOfAttributeIncludeHeader = int.from_bytes(fp.read(4),byteorder='little')
-            if(self.typeHeader != "STANDARD_INFORMATION" and self.typeHeader != "FILE_NAME" and self.typeHeader != "END"):
+            if(self.typeHeader == "DATA"):
+                global SizeMFT
+                fp.seek(16,1)
+                SizeMFT = int.from_bytes(fp.read(8),byteorder='little')
+                fp.seek(self.SizeOfAttributeIncludeHeader-32,1)
+                return
+            elif(self.typeHeader != "STANDARD_INFORMATION" and self.typeHeader != "FILE_NAME" and self.typeHeader != "END" and self.typeHeader != "DATA"):
                 fp.seek(self.SizeOfAttributeIncludeHeader-8,1)
                 return
             self.NonResidentFlag = int.from_bytes(fp.read(1),byteorder='little')
@@ -139,6 +146,7 @@ class MFTEntry:
         self.SizeofusedMFTE = 0
         self.SizeofMFTE = 0
         self.IDofMFTEntry = 0
+        self.sizeMFT = 0
         self.attributes = []
     def ReadMFTEntry(self,fp):
         if(int.from_bytes(fp.read(1024)) != 0):
@@ -180,9 +188,13 @@ class MFTEntry:
 class MFT:
     def __init__(self) -> None:
         self.MFT = []
-    def ReadMFT(self,drive,fp,offset):
+        self.MFTsize = 0
+    def ReadMFT(self,drive,fp,offset,bytePerCluster):
         fp.seek(offset)
-        while(True):
+        temp = MFTEntry()
+        temp.ReadMFTEntry(fp)
+        self.MFTsize = SizeMFT
+        while(True and fp.tell() <= (offset + self.MFTsize*bytePerCluster)): #fp.tell() 357.826.560
             temp = MFTEntry()
             temp.ReadMFTEntry(fp)
             if(temp.MFTEntry == 'FILE'):
@@ -190,8 +202,6 @@ class MFT:
                 continue
             elif(temp.MFTEntry == 'BAAD'):
                 self.MFT.append(temp)
-                continue
-            else:
                 continue
         return self
     def PrintMFT(self):
@@ -219,7 +229,7 @@ class MFT:
                 if(self.MFT[i].attributes[j].typeHeader == 'FILE_NAME'):
                     print("Parent Directory: ",self.MFT[i].attributes[j].content.file_name.IdRootParentDirectory)
                     print("Name: ",self.MFT[i].attributes[j].content.file_name.Name)
-            print("")
+            print("--------------------------------------------")
 class VBR:
     def __init__(self) -> None:
         self.BytesPerSector = 0
