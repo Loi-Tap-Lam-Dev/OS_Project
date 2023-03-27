@@ -204,32 +204,41 @@ class MFT:
                 self.MFT.append(temp)
                 continue
         return self
+    # def PrintMFT(self):
+    #     for i in range(len(self.MFT)):
+    #         # print("MFT Entry: ",i)
+    #         print("MFT Entry: ",self.MFT[i].MFTEntry)
+    #         print("Offset First Attribute: ",self.MFT[i].OffSetFirstAttri)
+    #         print("Flag: ",self.MFT[i].Flag)
+    #         print("Size of used MFT Entry: ",self.MFT[i].SizeofusedMFTE)
+    #         print("Size of MFT Entry: ",self.MFT[i].SizeofMFTE)
+    #         print("ID of MFT Entry: ",self.MFT[i].IDofMFTEntry)
+    #         for j in range(len(self.MFT[i].attributes)):
+    #             self.typeHeader = ''
+    #             print("Attribute: ",j)
+    #             print("Type Header: ",self.MFT[i].attributes[j].typeHeader)
+    #             print("Length of Attribute: ",self.MFT[i].attributes[j].SizeOfAttributeIncludeHeader)
+    #             print("Nonresident: ",self.MFT[i].attributes[j].NonResidentFlag)
+    #             print("Length of Name: ",self.MFT[i].attributes[j].LengthOfContent)
+    #             print("Offset to Name: ",self.MFT[i].attributes[j].OffsetToContent)
+    #             if(self.MFT[i].attributes[j].typeHeader == 'STANDARD_INFORMATION'):
+    #                 print("Creation Time: ",self.MFT[i].attributes[j].content.standard_information.create_time)
+    #                 print("Last Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_modification_time)
+    #                 print("Last MFT Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_mft_modification_time)
+    #                 print("Last Accessed Time: ",self.MFT[i].attributes[j].content.standard_information.last_access_time)
+    #             if(self.MFT[i].attributes[j].typeHeader == 'FILE_NAME'):
+    #                 print("Parent Directory: ",self.MFT[i].attributes[j].content.file_name.IdRootParentDirectory)
+    #                 print("Name: ",self.MFT[i].attributes[j].content.file_name.Name)
+    #                 for k in range(len(self.MFT[i].attributes[j].content.file_name.attr)):
+    #                     print("Attribute: ",self.MFT[i].attributes[j].content.file_name.attr[k])
+    #         print("--------------------------------------------")
     def PrintMFT(self):
-        for i in range(len(self.MFT)):
-            print("MFT Entry: ",i)
-            print("MFT Entry: ",self.MFT[i].MFTEntry)
-            print("Offset First Attribute: ",self.MFT[i].OffSetFirstAttri)
-            print("Flag: ",self.MFT[i].Flag)
-            print("Size of used MFT Entry: ",self.MFT[i].SizeofusedMFTE)
-            print("Size of MFT Entry: ",self.MFT[i].SizeofMFTE)
-            print("ID of MFT Entry: ",self.MFT[i].IDofMFTEntry)
-            for j in range(len(self.MFT[i].attributes)):
-                self.typeHeader = ''
-                print("Attribute: ",j)
-                print("Type Header: ",self.MFT[i].attributes[j].typeHeader)
-                print("Length of Attribute: ",self.MFT[i].attributes[j].SizeOfAttributeIncludeHeader)
-                print("Nonresident: ",self.MFT[i].attributes[j].NonResidentFlag)
-                print("Length of Name: ",self.MFT[i].attributes[j].LengthOfContent)
-                print("Offset to Name: ",self.MFT[i].attributes[j].OffsetToContent)
-                if(self.MFT[i].attributes[j].typeHeader == 'STANDARD_INFORMATION'):
-                    print("Creation Time: ",self.MFT[i].attributes[j].content.standard_information.create_time)
-                    print("Last Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_modification_time)
-                    print("Last MFT Modified Time: ",self.MFT[i].attributes[j].content.standard_information.last_mft_modification_time)
-                    print("Last Accessed Time: ",self.MFT[i].attributes[j].content.standard_information.last_access_time)
-                if(self.MFT[i].attributes[j].typeHeader == 'FILE_NAME'):
-                    print("Parent Directory: ",self.MFT[i].attributes[j].content.file_name.IdRootParentDirectory)
-                    print("Name: ",self.MFT[i].attributes[j].content.file_name.Name)
-            print("--------------------------------------------")
+            for i in range(len(self.MFT)):
+                for j in range(len(self.MFT[i].attributes)):
+                    if(self.MFT[i].attributes[j].content.file_name.attr[1] == "NULL" and self.MFT[i].attributes[j].content.file_name.attr[2] == "NULL"):
+                            print(self.MFT[i].attributes[j].content.file_name.Name)
+                            break
+                            
 class VBR:
     def __init__(self) -> None:
         self.BytesPerSector = 0
