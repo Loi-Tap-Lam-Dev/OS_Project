@@ -47,7 +47,9 @@ def Print_Directory_Tree_v2(Entry,i, str, depth = 0):
     y = 1
     if depth > 6: return None
     
+    #print(str + Entry.name, [i for i in Entry.attr if i != "NULL"],'\n')
     print(str + Entry.name, '\n')
+    
     if Entry.attr[3] == 'Directory' and Entry.attr[4] == 'NULL' and Entry.attr[5] == 'NULL' and Entry.attr[6] == 'NULL' and Entry.attr[7] == 'NULL':
         for x in Entry.ListEntry:
             str = ' ' * i 
