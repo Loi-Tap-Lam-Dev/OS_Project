@@ -61,7 +61,6 @@ class BootSectorFAT32:
     
         print("\n")
         
-
 class MBR:
     def __init__(self) -> None:
         self.status = 0
@@ -91,14 +90,19 @@ class MBR:
         print("Total Sector: ", self.totalSector)
 
 class Entry: # These just Object to store data of each Entry
+
     def __init__(self) -> None:
         self.name = ""
-        self.attr = ""
+        self.attr = ["NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL"]
+        #              X       X      ARCH    DIR     VOL    SYSTEM   HIDDEN  READONLY
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
         self.size = 0
+        self.startCluster = 0
         self.tempName = ""
+        
+        self.ListEntry = [] # List of Entry
         
     def setNULL(self):
         self.name = ""
@@ -106,63 +110,61 @@ class Entry: # These just Object to store data of each Entry
         self.attr_Bin = 0
         self.createTime = 0
         self.createDate = 0
+        self.startCluster = 0
         self.size = 0
         self.tempName = ""
-class RDET:
-    
-    # We Read Each Entry And Store It In List
-    def __init__(self) -> None:
-        self.ListEntry = []
-        self.EachEntry = None
-    
+
     def ReadMainEntry(self, address, drive, fp):
                 #seek(1,0) -> ten chinh
                 #read tung byte
                 fp.seek(address,0)
-                if(self.EachEntry.name == ""):
+                if(self.name == ""):
                     for i in range(8):
-                        eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.EachEntry.name += chr(eachName)
-                        
+                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        if chr(eachName) != ' ': # If not space
+                            self.name += chr(eachName)
+                    
                     #read(3) -> ten phu
-                    checkExistExtensionName = True
-                    self.EachEntry.name += "."
+                    self.name += "."
                     for i in range(3):
-                        eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.EachEntry.name += chr(eachName)
+                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
+                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
+                        self.name += chr(eachName)
                 else:
                     fp.seek(11,1)
                 #read(1) -> attribute
                 getbinary = lambda x, n: format(x, 'b').zfill(n)
-                self.EachEntry.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
-                bi = self.EachEntry.attr_Bin
+                self.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
+                bi = self.attr_Bin
                 for i in range(len(bi)):
                     if bi[i] == '1':
                         if i==2:
-                            self.EachEntry.attr += "Archive, "
+                            self.attr[i] = "Archive"
                         elif i==3:
-                            self.EachEntry.attr += "Directory, "
+                            self.attr[i] = "Directory"
                         elif i==4:
-                            self.EachEntry.attr += "Volume Label, "
+                            self.attr[i] = "Volume Label"
                         elif i==5:
-                            self.EachEntry.attr += "System File, "
+                            self.attr[i] = "System File"
                         elif i == 6:
-                            self.EachEntry.attr += "Hidden File, "
+                            self.attr[i] = "Hidden File"
                         elif i==7:
-                            self.EachEntry.attr += "Read Only, "
+                            self.attr[i] = "Read Only"
                 #seek(1) -> seek 1
                 #read(1) -> create time
                 fp.seek(1,1)
                 time = getbinary((int.from_bytes(fp.read(3),'little')), 24)
-                self.EachEntry.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
+                self.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
                 #read(4) -> create date time
                 date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
-                self.EachEntry.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
+                self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
                 #seek(10)
-                fp.seek(10,1)
+                fp.seek(8,1)
+                self.startCluster = int.from_bytes(fp.read(2),byteorder='little')
                 #read(4) -> size
-                self.EachEntry.size = int.from_bytes(fp.read(4),byteorder='little')
-    #read entry phu
+                self.size = int.from_bytes(fp.read(4),byteorder='little')
+
     def ReadExtraEntry(self, address, drive, fp):
             #seek(1)
             fp.seek(address,0)
@@ -170,35 +172,25 @@ class RDET:
             #read(10) -> 5 ky tu cua ten file utf-16
  
             for i in range(5):
-                # eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                eachName = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
             #seek(3)
             fp.seek(3,1)
             #read(12)-> 6 ky tu ten file
             for i in range(6):
-                eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
             #seek(2)
             fp.seek(2,1)
             #read(4) -> 2 ky tu ten file
             for i in range(2):
-                eachName  = int.from_bytes(fp.read(2), byteorder='little')
-                self.EachEntry.tempName += chr(eachName)
- 
-    def PrintRDET(self):
-        
-        for i in self.ListEntry:
-            print("Name: ", i.name)
-            #print("Bit Pattern of Attribute: ", i.attr_Bin)
-            print("Attribute: ", i.attr)
-            print("Create Time: ", i.createTime)
-            print("Create Date: ", i.createDate)
-            print("Size: ", i.size)
+                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+                if eachName != 65535:
+                    self.tempName += chr(eachName)
 
-            print('\n')
- 
-    def ReadRDET(self,address, drive):
+    def ReadDET(self,address, drive):
         # Step_1: Move to offset xxxB (1 byte): check the type of Entry
         # Step_2: If it is Main Entry, read 32 bytes
         # Otherwise, read Extra Entry
@@ -208,7 +200,7 @@ class RDET:
             TempName = ""
             while True:
                 # New Entry Each Time
-                self.EachEntry = Entry()
+                EachEntry = Entry()
                 
                 # Seek each Entry - 32 bytes pattern
                 fp.seek(address,0)
@@ -220,21 +212,51 @@ class RDET:
                 fp.read(10)
                 
                 getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
-                first_Byte_Main_Entry = int.from_bytes(fp.read(1), byteorder='little') 
+                Entry_Type_Byte = int.from_bytes(fp.read(1), byteorder='little') 
                 
-                if first_Byte_Main_Entry == 0: break # Empty Entry -> End Of Directory
- 
-                if  first_Byte_Main_Entry == 15: # Extra Entry
-                    self.ReadExtraEntry(address, drive, fp)
+                if Entry_Type_Byte == 0: break # Empty Entry -> End Of Directory
+                if  Entry_Type_Byte == 15: # Extra Entry
+                    EachEntry.ReadExtraEntry(address, drive, fp)
                     
-                    self.EachEntry.name = self.EachEntry.tempName + self.EachEntry.name
-                    TempName = self.EachEntry.name + TempName
+                    EachEntry.name = EachEntry.tempName + EachEntry.name
+                    TempName = EachEntry.name + TempName
                 else:
-                    self.ReadMainEntry(address, drive, fp)
-                    if (TempName != ""):
-                        self.EachEntry.name = TempName
-                        TempName = ""
-                    self.ListEntry.append(self.EachEntry)
+                    EachEntry.ReadMainEntry(address, drive, fp)
+                    if len(TempName) > 8:
+                        EachEntry.name = TempName
+                    TempName = ""
+                    if (EachEntry.name[0] != '.' and EachEntry.name[1] != '.'):
+                        self.ListEntry.append(EachEntry)
+                    
                 address += 32
+        return 0
+
+    def PrintAttribute(self):
+        
+        print("Name: ", self.name)
+        #print("Bit Pattern of Attribute: ", self.attr_Bin)
+        print("Attribute: ", [i for i in self.attr if i != "NULL"])
+        print("Create Time: ", self.createTime)
+        print("Create Date: ", self.createDate)
+        print("Start Cluster: ", self.startCluster)
+        print("Size: ", self.size)
+
+        print('\n')
+
+class RDET:
+    
+    # We Read Each Entry And Store It In List
+    def __init__(self) -> None:
+        self.RootEntry = Entry()
+
+    def PrintRDET(self):
+
+        for i  in self.RootEntry.ListEntry:
+            i.PrintAttribute()
+    
+    def ReadRDET(self,address, drive):
+        
+        self.RootEntry.ReadDET(address, drive)
+        
         return 0
 
