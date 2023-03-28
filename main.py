@@ -61,6 +61,7 @@ def Print_Directory_Tree_v2(Entry,i, str, depth = 0):
     return None
 
 def Print_Directory_Tree_v3(Entry,i, str, depth = 0):
+    
     path = []
     if depth > 6: return None
     
@@ -149,6 +150,23 @@ def PrintDirectory(Entry, i, str, isROOT = False):
     
     return None
 
+def PrintDirectory_v2(Entry, i, str, isROOT = False):
+    y = 1
+    for j in range(len(Entry.attributes)):
+        if(Entry.attributes[j].typeHeader == 'FILE_NAME'):
+            if(Entry.attributes[j].content.file_name.attr[1] != "NULL" or Entry.attributes[j].content.file_name.attr[2] != "NULL"):
+                if(isROOT != True): return None
+                break
+            else: 
+                print(str + Entry.attributes[j].content.file_name.Name, '\n')
+            break
+    
+    for x in Entry.listEntry:
+        str = " " * i
+        PrintDirectory(x, i + 5, str + '|' + '----')
+    
+    return None
+
 def main():
     """ Detect all drive """
     drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
@@ -161,7 +179,7 @@ def main():
         """ Boot Sector """
         BOOT = ReadInfoFromBootSector(drive)
         
-        if BOOT.FATtype.split(" ")[0] != 'FAT32': 
+        if BOOT.FATtype.split(" ")[0] == 'FAT32': 
             #print ("Reading boot sector FAT32...")
             
             """ Address of FAT1, FAT2, RDET (Including Data part) """
@@ -184,24 +202,26 @@ def main():
             Layer.Display(file_path)
             
         else: 
+            if drive[4:] == 'C:': continue
             with open (drive,'rb') as fp:
                 NTFS_BOOT = NTFS.VBR()
                 NTFS_BOOT.ReadVBR(drive,fp)
-                NTFS_BOOT.PrintVBR()
-                print("-----------------------")
+                #NTFS_BOOT.PrintVBR()
+                #print("-----------------------")
                 MFTAddress = NTFS_BOOT.FirstClusterInMFT * NTFS_BOOT.BytesPerSector * NTFS_BOOT.SectorPerCluster
                 MFT = NTFS.MFT()
                 MFT.ReadMFT(drive,fp,MFTAddress,NTFS_BOOT.BytesPerSector*NTFS_BOOT.SectorPerCluster)
                 #MFT.PrintMFT()
                 
-            print("-----------------------")    
+            # print("-----------------------")    
             LocatedRoot(MFT)
-            CheckIsFolder(MFT)
+            #CheckIsFolder(MFT)
             
-            for i in range(len(MFT.MFT)):
-                if (MFT.MFT[i].isROOT == True):
-                    PrintDirectory(MFT.MFT[i],0,"", True)
-                    break
+            # for i in range(len(MFT.MFT)):
+            #     if (MFT.MFT[i].isROOT == True):
+            #         PrintDirectory(MFT.MFT[i],0,"", True)
+            #         break
+
 # def main1():
     
 #     """ Drive Path """

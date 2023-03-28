@@ -1,7 +1,9 @@
 import os
 import datetime
+
 def as_datetime(windows_timestamp):
     return datetime.datetime.fromtimestamp((windows_timestamp - 116444736000000000) / 10000000)
+
 SizeMFT = 0
 class ContentOfStandardInformation:
     def __init__(self) -> None:
@@ -42,7 +44,6 @@ class Content:
     def __init__(self) -> None:
         self.standard_information = ContentOfStandardInformation()
         self.file_name = ContentOfFileName()
- 
 class Attribute: #type,size,
     def __init__(self) -> None:
         self.typeHeader = ''
@@ -135,7 +136,6 @@ class Attribute: #type,size,
                 fp.seek(self.SizeOfAttributeIncludeHeader - (self.OffsetToContent+self.LengthOfContent),1)
             else:
                 fp.seek(self.SizeOfAttributeIncludeHeader-4,1)
-
 class MFTEntry:
     def __init__(self) -> None:
         self.MFTEntry = ''
@@ -184,9 +184,6 @@ class MFTEntry:
                 break
         fp.seek(self.SizeofMFTE - self.SizeofusedMFTE+4,1)
         return self
-
-
-
 class MFT:
     def __init__(self) -> None:
         self.MFT = []
