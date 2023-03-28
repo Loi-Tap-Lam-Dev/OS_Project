@@ -160,8 +160,15 @@ class Entry: # These just Object to store data of each Entry
                 date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
                 self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
                 #seek(10)
-                fp.seek(8,1)
-                self.startCluster = int.from_bytes(fp.read(2),byteorder='little')
+                
+                fp.seek(2,1)
+                highword = int.from_bytes(fp.read(2),byteorder='little') << 4
+                fp.seek(4,1)
+                lowword = int.from_bytes(fp.read(2),byteorder='little')
+                self.startCluster = highword + lowword
+                # fp.seek(8,1)
+                # self.startCluster = int.from_bytes(fp.read(2),byteorder='little') #1A
+                
                 #read(4) -> size
                 self.size = int.from_bytes(fp.read(4),byteorder='little')
 
