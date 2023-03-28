@@ -18,7 +18,7 @@ def ReadInfoRDET(drive, BOOT, RDET_Address):
     """ Read all directory in RDET """
     for x in RDET.RootEntry.ListEntry:
         ReadAllDirectory_FromRDET(x, RDET_Address, BOOT, drive)
-        
+        y = 1
     return RDET
 
 def ReadAllDirectory_FromRDET(Entry, RDET_Address, bootSector, drive, depth = 0):
