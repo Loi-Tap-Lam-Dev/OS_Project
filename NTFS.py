@@ -135,9 +135,7 @@ class Attribute: #type,size,
                 fp.seek(self.SizeOfAttributeIncludeHeader - (self.OffsetToContent+self.LengthOfContent),1)
             else:
                 fp.seek(self.SizeOfAttributeIncludeHeader-4,1)
- 
- 
- 
+
 class MFTEntry:
     def __init__(self) -> None:
         self.MFTEntry = ''
@@ -147,6 +145,7 @@ class MFTEntry:
         self.SizeofMFTE = 0
         self.IDofMFTEntry = 0
         self.sizeMFT = 0
+        self.isROOT = False
         self.attributes = []
         self.listEntry = []
     def ReadMFTEntry(self,fp):
@@ -179,16 +178,19 @@ class MFTEntry:
             temp.ReadAttribute(fp)
             if(temp.typeHeader == 'STANDARD_INFORMATION' or temp.typeHeader == 'FILE_NAME'):
                 self.attributes.append(temp)
+                if temp.content.file_name.IdRootParentDirectory == self.IDofMFTEntry:
+                    self.isROOT = True
             if(temp.typeHeader == "END"):
                 break
         fp.seek(self.SizeofMFTE - self.SizeofusedMFTE+4,1)
         return self
- 
- 
- 
+
+
+
 class MFT:
     def __init__(self) -> None:
         self.MFT = []
+        self.Dictionary = {}
         self.MFTsize = 0
     def ReadMFT(self,drive,fp,offset,bytePerCluster):
         fp.seek(offset)
@@ -200,12 +202,13 @@ class MFT:
             temp.ReadMFTEntry(fp)
             if(temp.MFTEntry == 'FILE'):
                 self.MFT.append(temp)
+                self.Dictionary[temp.IDofMFTEntry] = temp
                 continue
             elif(temp.MFTEntry == 'BAAD'):
                 self.MFT.append(temp)
                 continue
         return self
- 
+    
     def PrintMFT(self):
         for i in range(len(self.MFT)):
             print("MFT Entry: ",i)
@@ -234,7 +237,7 @@ class MFT:
                     for k in range(len(self.MFT[i].attributes[j].content.file_name.attr)):
                         print("Attribute: ",self.MFT[i].attributes[j].content.file_name.attr[k])
             print("--------------------------------------------")
- 
+    
     # def PrintMFT(self):
     #         y = 1
     #         for i in range(len(self.MFT)):
@@ -242,11 +245,7 @@ class MFT:
     #                 if(self.MFT[i].attributes[j].typeHeader == 'FILE_NAME'):
     #                     if(self.MFT[i].attributes[j].content.file_name.attr[1] == "NULL" and self.MFT[i].attributes[j].content.file_name.attr[2] == "NULL"):
     #                             print(self.MFT[i].attributes[j].content.file_name.Name)
-
- 
-
-
- 
+                            
 class VBR:
     def __init__(self) -> None:
         self.BytesPerSector = 0
