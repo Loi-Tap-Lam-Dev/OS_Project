@@ -160,8 +160,15 @@ class Entry: # These just Object to store data of each Entry
                 date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
                 self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
                 #seek(10)
-                fp.seek(8,1)
-                self.startCluster = int.from_bytes(fp.read(2),byteorder='little')
+                
+                fp.seek(2,1)
+                highword = int.from_bytes(fp.read(2),byteorder='little') << 16
+                fp.seek(4,1)
+                lowword = int.from_bytes(fp.read(2),byteorder='little')
+                self.startCluster = highword + lowword
+                # fp.seek(8,1)
+                # self.startCluster = int.from_bytes(fp.read(2),byteorder='little') #1A
+                
                 #read(4) -> size
                 self.size = int.from_bytes(fp.read(4),byteorder='little')
 
@@ -205,7 +212,9 @@ class Entry: # These just Object to store data of each Entry
                 # Seek each Entry - 32 bytes pattern
                 fp.seek(address,0)
                 
-                if int.from_bytes(fp.read(1), byteorder='little') == 0xE5:  
+                checkFirstByte = int.from_bytes(fp.read(1), byteorder='little')
+                if checkFirstByte == 0x00: break # Empty Entry -> End Of Directory
+                if checkFirstByte == 0xE5:  
                     address += 32         
                     continue
                 # Move to offset 11B (1 byte): check the type of Entry
@@ -214,7 +223,7 @@ class Entry: # These just Object to store data of each Entry
                 getbinary = lambda x, n: format(x, 'b').zfill(n) # Full Fill The Binary Pattern with n bit
                 Entry_Type_Byte = int.from_bytes(fp.read(1), byteorder='little') 
                 
-                if Entry_Type_Byte == 0: break # Empty Entry -> End Of Directory
+                # if Entry_Type_Byte == 0: break # Empty Entry -> End Of Directory
                 if  Entry_Type_Byte == 15: # Extra Entry
                     EachEntry.ReadExtraEntry(address, drive, fp)
                     
@@ -229,7 +238,8 @@ class Entry: # These just Object to store data of each Entry
                         self.ListEntry.append(EachEntry)
                     
                 address += 32
-        return 0
+                
+        return None
 
     def PrintAttribute(self):
         
