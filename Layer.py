@@ -1,79 +1,102 @@
 import tkinter as tk
 from tkinter import ttk
 
+# Sample directory tree data
+# data = [
+#   {
+#     "Name": "folder1",
+#     "Attribute": "directory",
+#     "Date_Created": "2022-01-01",
+#     "Time_Created": "10:00:00",
+#     "Size": 0,
+#     "Children": [
+#       {
+#         "Name": "subfolder1",
+#         "Attribute": "directory",
+#         "Date_Created": "2022-01-01",
+#         "Time_Created": "10:00:00",
+#         "Size": 0,
+#         "Children": [
+#           {
+#             "Name": "file1.txt",
+#             "Attribute": "file",
+#             "Date_Created": "2022-01-01",
+#             "Time_Created": "10:01:00",
+#             "Size": 1000
+#           },
+#           {
+#             "Name": "file2.txt",
+#             "Attribute": "file",
+#             "Date_Created": "2022-01-01",
+#             "Time_Created": "10:02:00",
+#             "Size": 2000
+#           }
+#         ]
+#       },
+#       {
+#         "Name": "subfolder2",
+#         "Attribute": "directory",
+#         "Date_Created": "2022-01-01",
+#         "Time_Created": "10:00:00",
+#         "Size": 0,
+#         "Children": [
+#           {
+#             "Name": "file3.txt",
+#             "Attribute": "file",
+#             "Date_Created": "2022-01-01",
+#             "Time_Created": "10:03:00",
+#             "Size": 3000
+#           },
+#           {
+#             "Name": "file4.txt",
+#             "Attribute": "file",
+#             "Date_Created": "2022-01-01",
+#             "Time_Created": "10:04:00",
+#             "Size": 4000
+#           }
+#         ]
+#       }
+#     ]
+#   }
+# ]
 
-class FileExplorerTreePathGUI:
-    def __init__(self, root, file_path):
-        self.root = root
-        self.file_path = file_path
+# Recursive function to load directory tree data into the TreeView widget
+def load_tree(tree, parent_node, data):
+    for node in data:
+        node_id = tree.insert(parent_node, 'end', text=node['Name'], values=[node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
+        if 'Children' in node:
+            load_tree(tree, node_id, node['Children'])
 
-        self.treeview = ttk.Treeview(self.root)
-        self.treeview.pack(side='left', fill='both', expand=True)
+# Callback function to display file/folder information when a node is clicked
+def on_click(event):
+    node_id = event.widget.focus()
+    if node_id:
+        values = event.widget.item(node_id)['values']
+        # if values:
+        #     print('Name:', event.widget.item(node_id)['text'])
+        #     print('Attribute:', values[0])
+        #     print('Date Created:', values[1])
+        #     print('Time Created:', values[2])
+        #     print('Size:', values[3])
 
-        self.scrollbar = ttk.Scrollbar(self.root)
-        self.scrollbar.pack(side='right', fill='y')
-        self.scrollbar.config(command=self.treeview.yview)
-        self.treeview.config(yscrollcommand=self.scrollbar.set)
-
-        self.insert_tree_nodes('', self.file_path)
-
-    def insert_tree_nodes(self, parent, path):
-        if not path:
-            return
-
-        for component in path:
-            if isinstance(component, str):
-                if not parent:
-                    parent = ''
-                self.treeview.insert(parent, 'end', text=component, open=True)
-            elif isinstance(component, dict):
-                for key, value in component.items():
-                    node = self.treeview.insert(parent, 'end', text=key, open=True)
-                    self.insert_tree_nodes(node, value)
-
-def Display(file_path):
+# Load directory tree data into the TreeView widget
+def Display(data): 
+    #Create the main window and TreeView widget
     root = tk.Tk()
-    root.title('File Explorer Tree Path')
-    root.geometry('800x600')
-    
-    # array = {'Hello': ['Hi', 'Bye']}
-    # str = "Hi"
-    # array[str] = {'Hi', 'Bye'}
-    
-    # file_path = [{
-    #     'C': [ 
-    #     {'Program Files': [
-    #         'Internet Explorer',
-    #         {'Microsoft Office': [
-    #             'Excel.exe',
-    #             'Word.exe',
-    #             'PowerPoint.exe'
-    #         ]}
-    #     ]},
-    #     {'Users': [
-    #         {'John': [
-    #             'Documents',
-    #             'Downloads',
-    #             {'Pictures': [
-    #                 'Vacation',
-    #                 'Family'
-    #             ]}
-    #         ]},
-    #         {'Mary': [
-    #             'Documents',
-    #             {'Pictures': [
-    #                 'Summer',
-    #                 'Christmas'
-    #             ]}
-    #         ]}
-    #     ]}
-    #     ]
-    # }]
-    # file_path.append('D:')
-    # print(array)
-    
-    FileExplorerTreePathGUI(root, file_path)
+    root.title('Directory Tree')
+    tree = ttk.Treeview(root, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
+    tree.heading('#0', text='Name')
+    tree.heading('#1', text='Attribute')
+    tree.heading('#2', text='Date Created')
+    tree.heading('#3', text='Time Created')
+    tree.heading('#4', text='Size')
+    load_tree(tree, '', data)
+    tree.pack(fill=tk.BOTH, expand=True)
 
+    # Bind the click event to the TreeView widget
+    # Bind the click event to the TreeView widget
+    tree.bind('<ButtonRelease-1>', on_click)
+
+    # Run the main event loop
     root.mainloop()
-    
-# main()
+
