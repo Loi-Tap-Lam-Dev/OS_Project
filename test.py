@@ -1,4 +1,5 @@
-
+highword = 1 << 4
+lo
 
 with open ("GfG.txt", rb) as f:
     fp.seek(2,1)

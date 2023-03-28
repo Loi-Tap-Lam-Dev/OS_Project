@@ -162,7 +162,7 @@ class Entry: # These just Object to store data of each Entry
                 #seek(10)
                 
                 fp.seek(2,1)
-                highword = int.from_bytes(fp.read(2),byteorder='little') << 4
+                highword = int.from_bytes(fp.read(2),byteorder='little') << 16
                 fp.seek(4,1)
                 lowword = int.from_bytes(fp.read(2),byteorder='little')
                 self.startCluster = highword + lowword
