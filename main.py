@@ -162,7 +162,7 @@ def PrintDirectory_v2(Entry, i, str, isROOT = False):
     NTFS_CreateTime = ""
     Check_Is_Folder = False
     for j in range(len(Entry.attributes)):
-        if(Entry.attributes[j].typeHeader == 'STANDARD_INFORMATION'):
+        if(Entry.attributes[j].typeHeader == 'STANDARD_INFORMATION' ):
             NTFS_CreateTime = Entry.attributes[j].content.standard_information.create_time
             
         if(Entry.attributes[j].typeHeader == 'FILE_NAME'):
@@ -171,11 +171,13 @@ def PrintDirectory_v2(Entry, i, str, isROOT = False):
                 
                 dict_path = {}
                 dict_path["Name"] = Entry.attributes[j].content.file_name.Name
+                
                 str = ''
                 for x in range(len(Entry.attributes[j].content.file_name.attr)):
-                    if Entry.attributes[j].content.file_name.attr[x] != "NULL":
+                    if Entry.attributes[j].content.file_name.attr[x] != "NULL" and x != 1 and x != 2:
                         if str != '': str += ',' + Entry.attributes[j].content.file_name.attr[x]
                         else : str += Entry.attributes[j].content.file_name.attr[x]
+                        
                 dict_path["Attribute"] = str
                 dict_path["Date_Created"] = NTFS_CreateTime.split(" ")[0]
                 dict_path["Time_Created"] = NTFS_CreateTime.split(" ")[1]
