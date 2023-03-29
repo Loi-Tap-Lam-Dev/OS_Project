@@ -63,6 +63,7 @@ from tkinter import ttk
 # Recursive function to load directory tree data into the TreeView widget
 def load_tree(tree, parent_node, data):
     for node in data:
+        y = 1
         node_id = tree.insert(parent_node, 'end', text=node['Name'], values=[node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
         if 'Children' in node:
             load_tree(tree, node_id, node['Children'])

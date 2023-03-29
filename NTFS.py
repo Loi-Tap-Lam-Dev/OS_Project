@@ -148,7 +148,7 @@ class MFTEntry:
         self.isROOT = False
         self.attributes = []
         self.listEntry = []
-    def ReadMFTEntry(self,fp):
+    def ReadMFTEntry(self,fp, driveName):
         if(int.from_bytes(fp.read(1024), byteorder = 'little') != 0):
             fp.seek(-1024,1)
         else:
@@ -180,6 +180,9 @@ class MFTEntry:
                 self.attributes.append(temp)
                 if temp.content.file_name.IdRootParentDirectory == self.IDofMFTEntry:
                     self.isROOT = True
+                    for i in range(len(self.attributes)):
+                        if self.attributes[i].typeHeader == 'FILE_NAME':
+                            self.attributes[i].content.file_name.Name = driveName
             if(temp.typeHeader == "END"):
                 break
         fp.seek(self.SizeofMFTE - self.SizeofusedMFTE+4,1)
@@ -192,11 +195,11 @@ class MFT:
     def ReadMFT(self,drive,fp,offset,bytePerCluster):
         fp.seek(offset)
         temp = MFTEntry()
-        temp.ReadMFTEntry(fp)
+        temp.ReadMFTEntry(fp, drive[4:])
         self.MFTsize = SizeMFT
         while(True and fp.tell() <= (offset + self.MFTsize*bytePerCluster)): #fp.tell() 357.826.560
             temp = MFTEntry()
-            temp.ReadMFTEntry(fp)
+            temp.ReadMFTEntry(fp, drive[4:])
             if(temp.MFTEntry == 'FILE'):
                 self.MFT.append(temp)
                 self.Dictionary[temp.IDofMFTEntry] = temp

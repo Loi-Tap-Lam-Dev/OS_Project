@@ -140,17 +140,17 @@ class Entry: # These just Object to store data of each Entry
                 for i in range(len(bi)):
                     if bi[i] == '1':
                         if i==2:
-                            self.attr[i] = "Archive"
+                            self.attr[i] = "ARCHIVE"
                         elif i==3:
-                            self.attr[i] = "Directory"
+                            self.attr[i] = "DIRECTORY"
                         elif i==4:
-                            self.attr[i] = "Volume Label"
+                            self.attr[i] = "VOLUME LABEL"
                         elif i==5:
-                            self.attr[i] = "System File"
+                            self.attr[i] = "SYSTEM FILE"
                         elif i == 6:
-                            self.attr[i] = "Hidden File"
+                            self.attr[i] = "HIDDEN FILE"
                         elif i==7:
-                            self.attr[i] = "Read Only"
+                            self.attr[i] = "READ ONLY"
                 #seek(1) -> seek 1
                 #read(1) -> create time
                 fp.seek(1,1)
