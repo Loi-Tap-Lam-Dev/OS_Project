@@ -85,6 +85,14 @@ def display_properties(event):
         date_var.set(values[2])
         time_var.set(values[3])
         size_var.set(values[4])
+# Define a function to recursively populate the directory tree
+def populate_tree(parent, node):
+    if node['Name'] != 'root':
+        tree.insert(parent, 'end', text=node['Name'], values=(node['Name'], node['Attributes'], node['Date_Created'], node['Time_Created'], node['Size']))
+    if len(node['Children']) > 0:
+        for child in node['Children']:
+            child_id = tree.insert(parent, 'end', text=child['Name'], values=(child['Name'], child['Attributes'], child['Date_Created'], child['Time_Created'], child['Size']), open=False)
+            populate_tree(child_id, child)
 
 # Define the tkinter GUI
 root = tk.Tk()
@@ -136,14 +144,6 @@ size_var = tk.StringVar()
 size_entry = ttk.Entry(right_frame, textvariable=size_var, state="readonly",width=30)
 size_entry.grid(row=4, column=1, sticky="w")
 
-# Define a function to recursively populate the directory tree
-def populate_tree(parent, node):
-    if node['Name'] != 'root':
-        tree.insert(parent, 'end', text=node['Name'], values=(node['Name'], node['Attributes'], node['Date_Created'], node['Time_Created'], node['Size']))
-    if len(node['Children']) > 0:
-        for child in node['Children']:
-            child_id = tree.insert(parent, 'end', text=child['Name'], values=(child['Name'], child['Attributes'], child['Date_Created'], child['Time_Created'], child['Size']), open=False)
-            populate_tree(child_id, child)
 
 # Populate the directory tree with the nested list of dictionaries
 populate_tree('', file_system[0])
