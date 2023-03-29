@@ -1,6 +1,6 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
-
 # Sample directory tree data
 data = [
     {'Name': 'D:',
@@ -50,51 +50,51 @@ def on_click(event):
 # Create the main window and TreeView widget
 root = tk.Tk()
 root.title('Directory Tree')
+root.geometry('600x300')
+root.maxsize(900, 600)
+root.config(bg="skyblue")
 # tree = ttk.Treeview(root, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
 
-left_frame = ttk.Frame(root)
-left_frame.pack(side="left", fill="both", expand=True)
+left_frame = Frame(root, bd=0, width=200, height=400,bg='white')
+left_frame.grid(row=0, column=0, padx=10, pady=5)
+left_frame.pack(side="left", fill="none", expand=True)
 
 tree = ttk.Treeview(left_frame)
 tree.pack(side="left", fill="both", expand=True)
 
-right_frame = ttk.Frame(root)
-right_frame.pack(side="left", fill="both", expand=True)
+right_frame = Frame(root,bd=0, width=650, height=400,bg='white')
 
-name_label = ttk.Label(right_frame, text="Name:")
-name_label.grid(row=0, column=0, sticky="w")
-name_var = tk.StringVar()
-name_entry = ttk.Entry(right_frame, textvariable=name_var,
-                       state="readonly", width=30)
-name_entry.grid(row=0, column=1, sticky="w")
+right_frame.pack(side="left", fill="none", expand=True)
 
-attributes_label = ttk.Label(right_frame, text="Attributes:")
-attributes_label.grid(row=1, column=0, sticky="w")
-attributes_var = tk.StringVar()
-attributes_entry = ttk.Entry(
-    right_frame, textvariable=attributes_var,  state="readonly", width=30)
-attributes_entry.grid(row=1, column=1, sticky="w")
+name_label = Label(right_frame, bg='white', padx=5, pady=5, fg='red', text="Name:")
+name_label.grid(row=0, column=0,sticky="s")
+name_var = StringVar()
+name_entry = Entry(right_frame, textvariable=name_var, bg='white', state="readonly", width=25)
+name_entry.grid(row=0, column=1, sticky="s",padx=5, pady=5)
 
-date_label = ttk.Label(right_frame, text="Date Created:")
-date_label.grid(row=2, column=0, sticky="w")
-date_var = tk.StringVar()
-date_entry = ttk.Entry(right_frame, textvariable=date_var,
-                       state="readonly", width=30)
-date_entry.grid(row=2, column=1, sticky="w")
+attributes_label = Label(right_frame, bd=0, bg='white', padx=5, pady=5, fg='red', text="Attributes:")
+attributes_label.grid(row=1, column=0, sticky="s")
+attributes_var = StringVar()
+attributes_entry = Entry(right_frame, bg='white', textvariable=attributes_var, state="readonly", width=25)
+attributes_entry.grid(row=1, column=1, sticky="s", padx=5, pady=5)
 
-time_label = ttk.Label(right_frame, text="Time Created:")
-time_label.grid(row=3, column=0, sticky="w")
-time_var = tk.StringVar()
-time_entry = ttk.Entry(right_frame, textvariable=time_var,
-                       state="readonly", width=30)
-time_entry.grid(row=3, column=1, sticky="w")
+date_label = Label(right_frame, bg='white', padx=5, pady=5, fg='red', text="Date Created:")
+date_label.grid(row=2, column=0, sticky="s")
+date_var = StringVar()
+date_entry = Entry(right_frame, bg='white', textvariable=date_var, state="readonly", width=25)
+date_entry.grid(row=2, column=1, sticky="s", padx=5, pady=5)
 
-size_label = ttk.Label(right_frame, text="Size:")
-size_label.grid(row=4, column=0, sticky="w")
-size_var = tk.StringVar()
-size_entry = ttk.Entry(right_frame, textvariable=size_var,
-                       state="readonly", width=30)
-size_entry.grid(row=4, column=1, sticky="w")
+time_label = Label(right_frame, bg='white', padx=5, pady=5, fg='red', text="Time Created:")
+time_label.grid(row=3, column=0, sticky="s")
+time_var = StringVar()
+time_entry = Entry(right_frame, bg='white', textvariable=time_var, state="readonly", width=25)
+time_entry.grid(row=3, column=1, sticky="s", padx=5, pady=5)
+
+size_label = Label(right_frame, bg='white', padx=5, pady=5, fg='red', text="Size:")
+size_label.grid(row=4, column=0, sticky="s")
+size_var = StringVar()
+size_entry = Entry(right_frame, bg='white', textvariable=size_var, state="readonly", width=25)
+size_entry.grid(row=4, column=1, sticky="s", padx=5, pady=5)
 
 # tree.heading('#0', text='Name')
 # tree.heading('#1', text='Attribute')
