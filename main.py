@@ -251,7 +251,7 @@ def main():
             
             
         else: 
-            if drive[4:] == 'C:' or drive[4:] == 'D:' or drive[4:] == 'E:': continue
+            if drive[4:] == 'C:' : continue
             with open (drive,'rb') as fp:
                 NTFS_BOOT = NTFS.VBR()
                 NTFS_BOOT.ReadVBR(drive,fp)
@@ -279,6 +279,6 @@ def main():
             # data = PrintDirectory_v2
             # Layer.Display(data)
 
-        """ Display GUI"""
-        
-        return file_path
+    """ Display GUI"""
+    
+    return file_path
