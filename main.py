@@ -251,7 +251,7 @@ def main():
             
             
         else: 
-            if drive[4:] == 'C:': continue
+            if drive[4:] == 'C:' or drive[4:] == 'D:' or drive[4:] == 'E:': continue
             with open (drive,'rb') as fp:
                 NTFS_BOOT = NTFS.VBR()
                 NTFS_BOOT.ReadVBR(drive,fp)
