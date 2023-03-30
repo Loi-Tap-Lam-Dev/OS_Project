@@ -1,7 +1,7 @@
 import os
 import string
 import Data
-import Layer
+
 import NTFS
 
 """FAT32"""
@@ -279,8 +279,6 @@ def main():
             # data = PrintDirectory_v2
             # Layer.Display(data)
 
-    """ Display GUI"""
-    Layer.Display(file_path)
-
-
-main()
+        """ Display GUI"""
+        
+        return file_path
