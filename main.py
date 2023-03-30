@@ -1,7 +1,7 @@
 import os
 import string
 import Data
-import Layer
+
 import NTFS
 
 """FAT32"""
@@ -277,7 +277,7 @@ def main():
             
             
         else: 
-            if drive[4:] == 'C:': continue
+            if drive[4:] == 'C:' : continue
             with open (drive,'rb') as fp:
                 NTFS_BOOT = NTFS.VBR()
                 NTFS_BOOT.ReadVBR(drive,fp)
@@ -306,7 +306,5 @@ def main():
             # Layer.Display(data)
 
     """ Display GUI"""
-    Layer.Display(file_path)
-
-
-main()
+    
+    return file_path
