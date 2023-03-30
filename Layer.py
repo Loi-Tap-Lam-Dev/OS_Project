@@ -6,7 +6,7 @@ def load_tree(tree, parent_node, data):
     for node in data:
         '''text=node['Name']'''
         node_id = tree.insert(parent_node, 'end', text=''+node['Name'] , values=[
-                node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
+                node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size'], node['Type']])
         if 'Children' in node:
             load_tree(tree, node_id, node['Children'])
             
@@ -21,6 +21,7 @@ def on_click(event):
         date_var.set(values[1])
         time_var.set(values[2])
         size_var.set(values[3])
+        type_var.set(values[4])
         # if values:
         #     print('Name:', event.widget.item(node_id)['text'])
         #     print('Attribute:', values[0])
@@ -44,9 +45,15 @@ left_frame.pack(side="left", fill="both", padx=50,pady=60, expand=True)
 tree = ttk.Treeview(left_frame)
 tree.pack(side="left", fill="both", expand=True)
 
-right_frame = Frame(root,bd=0, width=900, height=600,bg='#FFE6B6')
+# Add a scrollbar to the left frame
+scrollbar = ttk.Scrollbar(left_frame, orient="vertical", command=tree.yview)
+scrollbar.pack(side="right", fill="y")
+tree.configure(yscrollcommand=scrollbar.set)
 
-right_frame.pack(side="left", fill="y", padx=0,pady=200, expand=True)
+
+right_frame = Frame(root,bd=4, width=900, height=800,bg='#FFE6B6')
+
+right_frame.pack(side="left", fill="y", padx=0,pady=150, expand=True)
 
 name_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=10, fg='#000181', text="Name:")
 name_label.grid(row=0, column=0,sticky="w")
@@ -77,6 +84,12 @@ size_label.grid(row=4, column=0, sticky="w")
 size_var = StringVar()
 size_entry = Entry(right_frame, bg='#FFE6B6', textvariable=size_var, state="readonly", width=25)
 size_entry.grid(row=4, column=1, sticky="w", padx=5, pady=8)
+
+type_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=8, fg='#000181', text="Type:")
+type_label.grid(row=5, column=0, sticky="w")
+type_var = StringVar()
+type_entry = Entry(right_frame, bg='#FFE6B6', textvariable=type_var, state="readonly", width=25)
+type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
 
 
 # Load directory tree data into the TreeView widget
