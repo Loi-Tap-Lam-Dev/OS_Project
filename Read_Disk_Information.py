@@ -238,7 +238,7 @@ def PrintDirectory_v2(Entry, i, str, isROOT = False):
     
     return dict_path
 
-def main():
+def Get_InFo_From_All_Disk():
     """ Detect all drive """
     drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 
