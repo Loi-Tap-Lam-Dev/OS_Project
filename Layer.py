@@ -1,77 +1,26 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 
-# Sample directory tree data
-# data = [
-#   {
-#     "Name": "folder1",
-#     "Attribute": "directory",
-#     "Date_Created": "2022-01-01",
-#     "Time_Created": "10:00:00",
-#     "Size": 0,
-#     "Children": [
-#       {
-#         "Name": "subfolder1",
-#         "Attribute": "directory",
-#         "Date_Created": "2022-01-01",
-#         "Time_Created": "10:00:00",
-#         "Size": 0,
-#         "Children": [
-#           {
-#             "Name": "file1.txt",
-#             "Attribute": "file",
-#             "Date_Created": "2022-01-01",
-#             "Time_Created": "10:01:00",
-#             "Size": 1000
-#           },
-#           {
-#             "Name": "file2.txt",
-#             "Attribute": "file",
-#             "Date_Created": "2022-01-01",
-#             "Time_Created": "10:02:00",
-#             "Size": 2000
-#           }
-#         ]
-#       },
-#       {
-#         "Name": "subfolder2",
-#         "Attribute": "directory",
-#         "Date_Created": "2022-01-01",
-#         "Time_Created": "10:00:00",
-#         "Size": 0,
-#         "Children": [
-#           {
-#             "Name": "file3.txt",
-#             "Attribute": "file",
-#             "Date_Created": "2022-01-01",
-#             "Time_Created": "10:03:00",
-#             "Size": 3000
-#           },
-#           {
-#             "Name": "file4.txt",
-#             "Attribute": "file",
-#             "Date_Created": "2022-01-01",
-#             "Time_Created": "10:04:00",
-#             "Size": 4000
-#           }
-#         ]
-#       }
-#     ]
-#   }
-# ]
-
-# Recursive function to load directory tree data into the TreeView widget
 def load_tree(tree, parent_node, data):
     for node in data:
-        node_id = tree.insert(parent_node, 'end', text=node['Name'], values=[node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
+        '''text=node['Name']'''
+        node_id = tree.insert(parent_node, 'end', text=''+node['Name'] , values=[
+                node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
         if 'Children' in node:
             load_tree(tree, node_id, node['Children'])
-
+            
 # Callback function to display file/folder information when a node is clicked
 def on_click(event):
     node_id = event.widget.focus()
-    if node_id:
+    if node_id != '':
         values = event.widget.item(node_id)['values']
+        # print(values)
+        name_var.set(event.widget.item(node_id)['text'])
+        attributes_var.set(values[0])
+        date_var.set(values[1])
+        time_var.set(values[2])
+        size_var.set(values[3])
         # if values:
         #     print('Name:', event.widget.item(node_id)['text'])
         #     print('Attribute:', values[0])
@@ -79,24 +28,67 @@ def on_click(event):
         #     print('Time Created:', values[2])
         #     print('Size:', values[3])
 
+# Global area
+# Create the main window and TreeView widget
+root = tk.Tk()
+root.title('Directory Tree')
+root.geometry('600x300')
+root.maxsize(900, 600)
+root.config(bg="#FFCC98")
+# tree = ttk.Treeview(root, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
+
+left_frame = Frame(root, bd=0, width=200, height=400,bg="#FFF7D9")
+# left_frame.grid(row=0, column=0, padx=10, pady=5)
+left_frame.pack(side="left", fill="none", expand=True)
+
+tree = ttk.Treeview(left_frame)
+tree.pack(side="left", fill="both", expand=True)
+
+right_frame = Frame(root,bd=0, width=650, height=400,bg='#FFE6B6')
+
+right_frame.pack(side="left", fill="none", expand=True)
+
+name_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=5, fg='#000181', text="Name:")
+name_label.grid(row=0, column=0,sticky="s")
+name_var = StringVar()
+name_entry = Entry(right_frame, textvariable=name_var, bg='#FFE6B6', state="readonly", width=25)
+name_entry.grid(row=0, column=1, sticky="s",padx=5, pady=5)
+
+attributes_label = Label(right_frame, bd=0, bg='#FFE6B6', padx=5, pady=5, fg='#000181', text="Attributes:")
+attributes_label.grid(row=1, column=0, sticky="s")
+attributes_var = StringVar()
+attributes_entry = Entry(right_frame, bg='#FFE6B6', textvariable=attributes_var, state="readonly", width=25)
+attributes_entry.grid(row=1, column=1, sticky="s", padx=5, pady=5)
+
+date_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=5, fg='#000181', text="Date Created:")
+date_label.grid(row=2, column=0, sticky="s")
+date_var = StringVar()
+date_entry = Entry(right_frame, bg='#FFE6B6', textvariable=date_var, state="readonly", width=25)
+date_entry.grid(row=2, column=1, sticky="s", padx=5, pady=5)
+
+time_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=5, fg='#000181', text="Time Created:")
+time_label.grid(row=3, column=0, sticky="s")
+time_var = StringVar()
+time_entry = Entry(right_frame, bg='#FFE6B6', textvariable=time_var, state="readonly", width=25)
+time_entry.grid(row=3, column=1, sticky="s", padx=5, pady=5)
+
+size_label = Label(right_frame, bg='#FFE6B6', padx=5, pady=5, fg='#000181', text="Size:")
+size_label.grid(row=4, column=0, sticky="s")
+size_var = StringVar()
+size_entry = Entry(right_frame, bg='#FFE6B6', textvariable=size_var, state="readonly", width=25)
+size_entry.grid(row=4, column=1, sticky="s", padx=5, pady=5)
+
+
 # Load directory tree data into the TreeView widget
 def Display(data): 
-    #Create the main window and TreeView widget
-    root = tk.Tk()
-    root.title('Directory Tree')
-    tree = ttk.Treeview(root, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
-    tree.heading('#0', text='Name')
-    tree.heading('#1', text='Attribute')
-    tree.heading('#2', text='Date Created')
-    tree.heading('#3', text='Time Created')
-    tree.heading('#4', text='Size')
+    # Load directory tree data into the TreeView widget
     load_tree(tree, '', data)
-    tree.pack(fill=tk.BOTH, expand=True)
-
+    # tree.pack(fill=tk.BOTH, expand=True)
+    
     # Bind the click event to the TreeView widget
     # Bind the click event to the TreeView widget
     tree.bind('<ButtonRelease-1>', on_click)
-
+    
     # Run the main event loop
     root.mainloop()
 

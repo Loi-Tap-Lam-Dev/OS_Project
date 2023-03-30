@@ -140,17 +140,17 @@ class Entry: # These just Object to store data of each Entry
                 for i in range(len(bi)):
                     if bi[i] == '1':
                         if i==2:
-                            self.attr[i] = "Archive"
+                            self.attr[i] = "ARCHIVE"
                         elif i==3:
-                            self.attr[i] = "Directory"
+                            self.attr[i] = "DIRECTORY"
                         elif i==4:
-                            self.attr[i] = "Volume Label"
+                            self.attr[i] = "VOLUME LABEL"
                         elif i==5:
-                            self.attr[i] = "System File"
+                            self.attr[i] = "SYSTEM FILE"
                         elif i == 6:
-                            self.attr[i] = "Hidden File"
+                            self.attr[i] = "HIDDEN FILE"
                         elif i==7:
-                            self.attr[i] = "Read Only"
+                            self.attr[i] = "READ ONLY"
                 #seek(1) -> seek 1
                 #read(1) -> create time
                 fp.seek(1,1)
@@ -240,6 +240,35 @@ class Entry: # These just Object to store data of each Entry
                 address += 32
                 
         return None
+
+    def PrintAttribute(self):
+        
+        print("Name: ", self.name)
+        #print("Bit Pattern of Attribute: ", self.attr_Bin)
+        print("Attribute: ", [i for i in self.attr if i != "NULL"])
+        print("Create Time: ", self.createTime)
+        print("Create Date: ", self.createDate)
+        print("Start Cluster: ", self.startCluster)
+        print("Size: ", self.size)
+
+        print('\n')
+
+class RDET:
+    
+    # We Read Each Entry And Store It In List
+    def __init__(self) -> None:
+        self.RootEntry = Entry()
+
+    def PrintRDET(self):
+
+        for i  in self.RootEntry.ListEntry:
+            i.PrintAttribute()
+    
+    def ReadRDET(self,address, drive):
+        
+        self.RootEntry.ReadDET(address, drive)
+        
+        return 0
 
     def PrintAttribute(self):
         
