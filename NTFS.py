@@ -58,6 +58,7 @@ class Attribute: #type,size,
     #     self.size = size
     #     self.data = data
     def ReadAttribute(self,fp):
+            #read type of attribute
             HeaderTypeHex = hex(int.from_bytes(fp.read(4),byteorder='little'))
             if(HeaderTypeHex == '0x10'):
                 self.typeHeader = "STANDARD_INFORMATION"
@@ -78,19 +79,26 @@ class Attribute: #type,size,
             elif(HeaderTypeHex == '0xffffffff'):
                 self.typeHeader = "END"
                 return
+            #read size of attribute
             self.SizeOfAttributeIncludeHeader = int.from_bytes(fp.read(4),byteorder='little')
             if(self.typeHeader == "DATA"):
+                #if data attribute, read size of MFT (only in MFTentry[0])
                 global SizeMFT
                 fp.seek(16,1)
                 SizeMFT = int.from_bytes(fp.read(8),byteorder='little')
+                #seek to end of attribute
                 fp.seek(self.SizeOfAttributeIncludeHeader-32,1)
                 return
+            #if not standard_information, file_name, end, data attribute -> seek to end of attribute
             elif(self.typeHeader != "STANDARD_INFORMATION" and self.typeHeader != "FILE_NAME" and self.typeHeader != "END" and self.typeHeader != "DATA"):
                 fp.seek(self.SizeOfAttributeIncludeHeader-8,1)
                 return
+            #read NonResidentFlag
             self.NonResidentFlag = int.from_bytes(fp.read(1),byteorder='little')
             fp.seek(7,1)
+            #read length of content
             self.LengthOfContent = int.from_bytes(fp.read(4),byteorder='little')
+            #read offset to content
             self.OffsetToContent = int.from_bytes(fp.read(2),byteorder='little')
             #header 16 bytes, size of content 4 bytes, offset to content 2 bytes
             #fp dang o vi tri offset cuoi content
@@ -98,6 +106,7 @@ class Attribute: #type,size,
             fp.seek(self.OffsetToContent-22,1) 
             self.content = Content()
             if(self.typeHeader == "STANDARD_INFORMATION"):
+                #read information of standard_information
                 self.content.standard_information.create_time = as_datetime(int.from_bytes(fp.read(8),byteorder='little'))
                 self.content.standard_information.create_time = self.content.standard_information.create_time.strftime("%d/%m/%Y %H:%M:%S")
                 self.content.standard_information.last_modification_time = as_datetime(int.from_bytes(fp.read(8),byteorder='little'))
@@ -108,6 +117,7 @@ class Attribute: #type,size,
                 self.content.standard_information.last_access_time = self.content.standard_information.last_access_time.strftime("%d/%m/%Y %H:%M:%S")
                 fp.seek(self.LengthOfContent-32,1)
             elif(self.typeHeader == "FILE_NAME"):
+                #read information of file_name
                 self.content.file_name.IdRootParentDirectory = int.from_bytes(fp.read(6),byteorder='little')
                 fp.seek(50,1)
                 getbinary = lambda x, n: format(x, 'b').zfill(n)
@@ -149,16 +159,23 @@ class MFTEntry:
         self.attributes = []
         self.listEntry = []
     def ReadMFTEntry(self,fp, driveName):
+        #each MFT Entry has 1024 bytes but MFT Entry can have 1024 bytes 00
+        #check if MFT Entry has 1024 bytes 00 -> seek to next MFT Entry
+        #else -> seek back to the beginning of MFT Entry and read
         if(int.from_bytes(fp.read(1024), byteorder = 'little') != 0):
             fp.seek(-1024,1)
         else:
             return
+        #read MFT Entry is FILE or BAAD
         for i in range(4):
             temp = fp.read(1)
             self.MFTEntry += temp.decode('ascii')
         self.MFTEntry = self.MFTEntry.replace('\x00','')
+        #seek to 16 bytes from the beginning of MFT Entry to offset 14
         fp.seek(16,1)
+        #read offset to first attribute
         self.OffSetFirstAttri = int.from_bytes(fp.read(2),byteorder='little') #luu tru = bytes
+        #read 2 bytes flag
         flag = hex(int.from_bytes(fp.read(2),byteorder='little'))
         if(flag == '0x0'):
             self.Flag = "File has already deleted"
@@ -168,24 +185,32 @@ class MFTEntry:
             self.Flag = "Directory has already deleted"
         elif(flag == '0x3'):
             self.Flag = "Directory is in use"
+        #read 4 bytes Size of used MFT Entry
         self.SizeofusedMFTE = int.from_bytes(fp.read(4),byteorder='little')
+        #read 4 bytes Size of MFT Entry
         self.SizeofMFTE = int.from_bytes(fp.read(4),byteorder='little')
         fp.seek(12,1)
+        #read 4 bytes ID of MFT Entry
         self.IDofMFTEntry = int.from_bytes(fp.read(4),byteorder='little')
+        #seek to offfset first attribute but minus 48 bytes (48 bytes which we have already read over)
         fp.seek(self.OffSetFirstAttri-48,1)
         while(True):
             temp = Attribute()
+            #read attribute
             temp.ReadAttribute(fp)
             if(temp.typeHeader == 'STANDARD_INFORMATION' or temp.typeHeader == 'FILE_NAME'):
+                #add attribute to list attribute
                 self.attributes.append(temp)
+                #check if MFT Entry is ROOT
                 if temp.content.file_name.IdRootParentDirectory == self.IDofMFTEntry:
                     self.isROOT = True
+                    #is ROOT = true -> this is MFT of Drive -> change name from '.' to drivename
                     for i in range(len(self.attributes)):
                         if self.attributes[i].typeHeader == 'FILE_NAME':
                             self.attributes[i].content.file_name.Name = driveName
-            if(temp.typeHeader == "END"):
+            if(temp.typeHeader == "END"): #if attribute is END -> break
                 break
-        fp.seek(self.SizeofMFTE - self.SizeofusedMFTE+4,1)
+        fp.seek(self.SizeofMFTE - self.SizeofusedMFTE+4,1) #seek to next MFT Entry 
         return self
 class MFT:
     def __init__(self) -> None:
@@ -193,13 +218,17 @@ class MFT:
         self.Dictionary = {}
         self.MFTsize = 0
     def ReadMFT(self,drive,fp,offset,bytePerCluster):
+        #seek to First Cluster in MFT
         fp.seek(offset)
+        #Read MFT entry[0] to get the size of MFT
         temp = MFTEntry()
         temp.ReadMFTEntry(fp, drive[4:])
-        self.MFTsize = SizeMFT
-        while(True and fp.tell() <= (offset + self.MFTsize*bytePerCluster)): #fp.tell() 357.826.560
+        self.MFTsize = SizeMFT #size of MFT is VCN in attribute data (virtual cluster number)
+        #Read each MFT entry, IF fp pointer > size of MFT, break
+        while(True and fp.tell() <= (offset + self.MFTsize*bytePerCluster)):
             temp = MFTEntry()
             temp.ReadMFTEntry(fp, drive[4:])
+            #IF MFT entry is FILE, add to MFT and Dictionary
             if(temp.MFTEntry == 'FILE'):
                 self.MFT.append(temp)
                 self.Dictionary[temp.IDofMFTEntry] = temp
@@ -257,17 +286,29 @@ class VBR:
         self.FirstClusterInMFTMirr = 0
         self.BytesPerEntryMFT = 0 #Byte per MFT Entry
     def ReadVBR(self,drive,fp):
+            #BytesPerSector in offset 0B -> read or seek 11 bytes -> 0B 00
             fp.read(11)
+            #BytesPerSector in offset 0B -> read 2 bytes, fp pointer after read at 0D
             self.BytesPerSector = int.from_bytes(fp.read(2),byteorder='little')
+            #SectorsPerCluster in offset 0D -> read 1 byte, fp pointer after read at 0E
             self.SectorPerCluster = int.from_bytes(fp.read(1),byteorder='little')
+            #SectorsPerTrack in offset 18 -> from 0E to 18 seek 10 bytes
             fp.seek(10,1)
+            #SectorsPerTrack in offset 18 -> read 2 bytes, fp pointer after read at 1A
             self.SectorPerTrack = int.from_bytes(fp.read(2),byteorder='little')
+            #NumberOfHead in offset 1A -> read 2 bytes, fp pointer after read at 1C
             self.NumberOfHead = int.from_bytes(fp.read(2),byteorder='little')
+            #TotalSector in offset 28 -> from 1C to 28 seek 12 bytes
             fp.seek(12,1)
+            #TotalSector in offset 28 -> read 8 bytes, fp pointer after read at 30
             self.TotalSector = int.from_bytes(fp.read(8),byteorder='little')
+            #FirstClusterInMFT in offset 30 -> from 30 to 38 seek 8 bytes
             self.FirstClusterInMFT = int.from_bytes(fp.read(8),byteorder='little')
+            #FirstClusterInMFTMirr in offset 38 -> from 38 to 40 seek 8 bytes
             self.FirstClusterInMFTMirr = int.from_bytes(fp.read(8),byteorder='little')
+            #BytesPerEntryMFT in offset 40 -> from 40 to 48 seek 8 bytes
             BinPerMFTEntry = int.from_bytes(fp.read(1),byteorder='little',signed=True)
+            #move to 2^bù 2
             self.BytesPerEntryMFT = 2**abs(BinPerMFTEntry) #so byte cua 1 entry MFT
     def PrintVBR(self):
         print("Byte per Sector: ",self.BytesPerSector)
