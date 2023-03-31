@@ -53,7 +53,7 @@ class DiskEditorFrame(tk.Frame):
                 time_var.set(values[2])
                 size_var.set(values[3])
                 
-        tree = ttk.Treeview(self, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
+        #tree = ttk.Treeview(self, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
 
         left_frame = Frame(self, bd=0, width=200, height=400)
         # left_frame.grid(row=0, column=0, padx=10, pady=5)
@@ -66,6 +66,10 @@ class DiskEditorFrame(tk.Frame):
         scrollbar = ttk.Scrollbar(left_frame, orient="vertical", command=tree.yview)
         scrollbar.pack(side="right", fill="y")
         tree.configure(yscrollcommand=scrollbar.set)
+
+        # scrollbar_X = ttk.Scrollbar(left_frame, orient="horizontal", command=tree.xview)
+        # scrollbar_X.pack(side="bottom", fill="x")
+        # tree.configure(xscrollcommand=scrollbar_X.set)
 
 
         right_frame = Frame(self,bd=4, width=900, height=900,bg='#A5C9CA')
@@ -102,11 +106,11 @@ class DiskEditorFrame(tk.Frame):
         size_entry = Entry(right_frame, bg='#A5C9CA', textvariable=size_var, state="readonly", width=25, font=("Arial",11))
         size_entry.grid(row=4, column=1, sticky="w", padx=5, pady=8)
 
-        type_label = Label(right_frame, bg='#A5C9CA', padx=5, pady=8, fg='#2C3333', text="Type:", font=("Arial", 11))
-        type_label.grid(row=5, column=0, sticky="w")
-        type_var = StringVar()
-        type_entry = Entry(right_frame, bg='#A5C9CA', textvariable=type_var, state="readonly", width=25, font=("Arial",11), fg='#2C3333')
-        type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
+        # type_label = Label(right_frame, bg='#A5C9CA', padx=5, pady=8, fg='#2C3333', text="Type:", font=("Arial", 11))
+        # type_label.grid(row=5, column=0, sticky="w")
+        # type_var = StringVar()
+        # type_entry = Entry(right_frame, bg='#A5C9CA', textvariable=type_var, state="readonly", width=25, font=("Arial",11), fg='#2C3333')
+        # type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
         load_tree(tree, '', data)
 
         tree.bind('<ButtonRelease-1>', on_click)

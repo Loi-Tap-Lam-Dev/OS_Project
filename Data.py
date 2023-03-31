@@ -30,12 +30,14 @@ class BootSectorFAT32:
             
             # Next, we move to Offset 0x20
             fp.seek(15,1)
+            
             # Read: Size of volume, Sector per FAT
             self.sizeVol = int.from_bytes(fp.read(4), byteorder='little')
             self.sectorPerFAT = int.from_bytes(fp.read(4), byteorder='little') # End At 0x28
             
             # Then we move to Offset 0x30
             fp.seek(4,1)
+            
             # Read: First cluster in RDET
             self.firstClusterinRDET = int.from_bytes(fp.read(4), byteorder='little') #End At 0x30
             
@@ -105,100 +107,97 @@ class Entry: # These just Object to store data of each Entry
         
         self.ListEntry = [] # List of Entry
         
-    def setNULL(self):
-        self.name = ""
-        self.attr = ""
-        self.attr_Bin = 0
-        self.createTime = 0
-        self.createDate = 0
-        self.startCluster = 0
-        self.size = 0
-        self.tempName = ""
-
     def ReadMainEntry(self, address, drive, fp):
-                #seek(1,0) -> ten chinh
-                #read tung byte
-                fp.seek(address,0)
-                if(self.name == ""):
-                    for i in range(8):
-                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
-                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        if chr(eachName) != ' ': # If not space
-                            self.name += chr(eachName)
-                    
-                    #read(3) -> ten phu
+            
+        # Seek to address
+        fp.seek(address,0)
+        
+        if(self.name == ""):
+            #Read 8 first character
+            for i in range(8): # We read one by one byte for 8 bytes
+                eachName  = int.from_bytes(fp.read(1), byteorder = 'little') # Read 1 byte
+                if chr(eachName) != ' ': # If not space
+                    self.name += chr(eachName)
+            
+            #Read 3 last character (if exist)
+            checkBlank = True
+            for i in range(3):
+                eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
+                if (chr(eachName) != ' ' and checkBlank == True):
                     self.name += "."
-                    for i in range(3):
-                        eachName  = int.from_bytes(fp.read(1), byteorder = 'little')
-                        #eachName  = int.from_bytes(fp.read(1), byteorder='little')
-                        self.name += chr(eachName)
-                else:
-                    fp.seek(11,1)
-                #read(1) -> attribute
-                getbinary = lambda x, n: format(x, 'b').zfill(n)
-                self.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
-                bi = self.attr_Bin
-                for i in range(len(bi)):
-                    if bi[i] == '1':
-                        if i==2:
-                            self.attr[i] = "ARCHIVE"
-                        elif i==3:
-                            self.attr[i] = "DIRECTORY"
-                        elif i==4:
-                            self.attr[i] = "VOLUME LABEL"
-                        elif i==5:
-                            self.attr[i] = "SYSTEM FILE"
-                        elif i == 6:
-                            self.attr[i] = "HIDDEN FILE"
-                        elif i==7:
-                            self.attr[i] = "READ ONLY"
-                #seek(1) -> seek 1
-                #read(1) -> create time
-                fp.seek(1,1)
-                time = getbinary((int.from_bytes(fp.read(3),'little')), 24)
-                self.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2))
-                #read(4) -> create date time
-                date = getbinary((int.from_bytes(fp.read(2),'little')), 16)
-                self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980)
-                #seek(10)
-                
-                fp.seek(2,1)
-                highword = int.from_bytes(fp.read(2),byteorder='little') << 16
-                fp.seek(4,1)
-                lowword = int.from_bytes(fp.read(2),byteorder='little')
-                self.startCluster = highword + lowword
-                # fp.seek(8,1)
-                # self.startCluster = int.from_bytes(fp.read(2),byteorder='little') #1A
-                
-                #read(4) -> size
-                self.size = int.from_bytes(fp.read(4),byteorder='little')
+                    checkBlank = False
+                self.name += chr(eachName)
+        else:
+            fp.seek(11,1) # Seek 11 bytes to skip name, start read attribute
+            
+        #Read 1 byte for attribute
+        getbinary = lambda x, n: format(x, 'b').zfill(n)
+        self.attr_Bin = getbinary(int.from_bytes(fp.read(1), byteorder = 'little'),8)
+        bi = self.attr_Bin # Convert to the bit pattern
+        
+        # Check the ith of bit pattern
+        for i in range(len(bi)):
+            if bi[i] == '1':
+                if i==2:
+                    self.attr[i] = "ARCHIVE"
+                elif i==3:
+                    self.attr[i] = "DIRECTORY"
+                elif i==4:
+                    self.attr[i] = "VOLUME LABEL"
+                elif i==5:
+                    self.attr[i] = "SYSTEM FILE"
+                elif i == 6:
+                    self.attr[i] = "HIDDEN FILE"
+                elif i==7:
+                    self.attr[i] = "READ ONLY"
+        
+        #Move the Created Time Part 
+        fp.seek(1,1) 
+        time = getbinary((int.from_bytes(fp.read(3),'little')), 24) # read 3 bytes
+        self.createTime = str(int(time[0:5],2)) + ":" + str(int(time[5:11],2)) + ":" + str(int(time[11:16],2)) # 0->5: second, 5->11: minute, 11->16: hour
+        
+        #The Created Date Part
+        date = getbinary((int.from_bytes(fp.read(2),'little')), 16) # read 2 bytes
+        self.createDate = str(int(date[11:16],2)) + "/"+ str(int(date[7:11],2)) + "/" + str(int(date[0:7],2)+1980) # 0->7: year, 7->11: month, 11->16: day
+        
+        # To Determine the exactly start cluster: Need the high word and low word of Start Cluster bit pattern, Both are 2 bytes
+        fp.seek(2,1)
+        highword = int.from_bytes(fp.read(2),byteorder='little') << 16
+        fp.seek(4,1)
+        lowword = int.from_bytes(fp.read(2),byteorder='little')
+        self.startCluster = highword + lowword
+        
+        # Size
+        self.size = int.from_bytes(fp.read(4),byteorder='little') #Read 4 bytes
 
     def ReadExtraEntry(self, address, drive, fp):
-            #seek(1)
-            fp.seek(address,0)
-            fp.seek(1,1)
-            #read(10) -> 5 ky tu cua ten file utf-16
- 
-            for i in range(5):
-                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
-                if eachName != 65535:
-                    self.tempName += chr(eachName)
-            #seek(3)
-            fp.seek(3,1)
-            #read(12)-> 6 ky tu ten file
-            for i in range(6):
-                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
-                if eachName != 65535:
-                    self.tempName += chr(eachName)
-            #seek(2)
-            fp.seek(2,1)
-            #read(4) -> 2 ky tu ten file
-            for i in range(2):
-                eachName = int.from_bytes(fp.read(2), byteorder = 'little')
-                if eachName != 65535:
-                    self.tempName += chr(eachName)
+        # Seek to address
+        fp.seek(address,0)
+        fp.seek(1,1) # Skip the first byte, get in the Name
+
+        #Read 5 first character of the Name
+        for i in range(5): #We read one by one byte for 5 times, each times read 2 bytes
+            eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+            if eachName != 65535: # If not space
+                self.tempName += chr(eachName)
+        
+        fp.seek(3,1) # Skip 3 more byte
+        
+        for i in range(6):
+            eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+            if eachName != 65535:
+                self.tempName += chr(eachName)
+        
+        fp.seek(2,1) # Skip 2 more byte
+    
+        #Read 2 last character of the Name
+        for i in range(2): # We read one by one byte for 2 times, each times read 2 bytes
+            eachName = int.from_bytes(fp.read(2), byteorder = 'little')
+            if eachName != 65535:
+                self.tempName += chr(eachName)
 
     def ReadDET(self,address, drive):
+        
         # Step_1: Move to offset xxxB (1 byte): check the type of Entry
         # Step_2: If it is Main Entry, read 32 bytes
         # Otherwise, read Extra Entry
@@ -206,6 +205,7 @@ class Entry: # These just Object to store data of each Entry
         
         with open (drive, 'rb') as fp:
             TempName = ""
+            
             while True:
                 # New Entry Each Time
                 EachEntry = Entry()
@@ -215,9 +215,10 @@ class Entry: # These just Object to store data of each Entry
                 
                 checkFirstByte = int.from_bytes(fp.read(1), byteorder='little')
                 if checkFirstByte == 0x00: break # Empty Entry -> End Of Directory
-                if checkFirstByte == 0xE5:  
-                    address += 32         
+                if checkFirstByte == 0xE5: # If it is deleted Entry
+                    address += 32 # Move to next Entry (+32bytes)    
                     continue
+                
                 # Move to offset 11B (1 byte): check the type of Entry
                 fp.read(10)
                 
@@ -225,20 +226,24 @@ class Entry: # These just Object to store data of each Entry
                 Entry_Type_Byte = int.from_bytes(fp.read(1), byteorder='little') 
                 
                 # if Entry_Type_Byte == 0: break # Empty Entry -> End Of Directory
-                if  Entry_Type_Byte == 15: # Extra Entry
+                if  Entry_Type_Byte == 15: # This is the Extra Entry
                     EachEntry.ReadExtraEntry(address, drive, fp)
                     
                     EachEntry.name = EachEntry.tempName + EachEntry.name
-                    TempName = EachEntry.name + TempName
+                    TempName = EachEntry.name + TempName # Save the name of Extra Entry for the next Main Entry if needed
+                    
                 else:
+                    # Read Main Entry
                     EachEntry.ReadMainEntry(address, drive, fp)
-                    if len(TempName) > 8:
+                    
+                    if len(TempName) > 8: # If the name Main Entry size > 8, we need to add the name of Extra Entry
                         EachEntry.name = TempName
-                    TempName = ""
-                    if (EachEntry.name[0] != '.' and EachEntry.name[1] != '.'):
+                        
+                    TempName = "" # Reset the name of Extra Entry
+                    if (EachEntry.name[0] != '.' and EachEntry.name[1] != '.'): # Usually in each Directory Entry, it has 2 Entry: '.' and '..'
                         self.ListEntry.append(EachEntry)
                     
-                address += 32
+                address += 32 # Move to next Entry (+32bytes)
                 
         return None
 
@@ -267,6 +272,7 @@ class RDET:
     
     def ReadRDET(self,address, drive):
         
+        # Read subEntry of the ROOT
         self.RootEntry.ReadDET(address, drive)
         
         return 0
