@@ -36,8 +36,13 @@ class DiskEditorFrame(tk.Frame):
         
         def load_tree(tree, parent_node, data):
             for node in data:
-                node_id = tree.insert(parent_node, 'end', text=''+node['Name'] , values=[
-                        node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size']])
+                Icon = ''
+                if node['Type'] == 'FILE': Icon = '📄'
+                if node['Type'] == 'FOLDER': Icon = '📁'
+                if node['Type'] == 'FAT32' or node['Type'] == 'NTFS': Icon = '💽'
+                
+                node_id = tree.insert(parent_node, 'end', text = Icon + " " + node['Name'], values=[
+                        node['Attribute'], node['Date_Created'], node['Time_Created'], node['Size'], node['Type']])
                 if 'Children' in node:
                     load_tree(tree, node_id, node['Children'])
                     
@@ -52,7 +57,7 @@ class DiskEditorFrame(tk.Frame):
                 date_var.set(values[1])
                 time_var.set(values[2])
                 size_var.set(values[3])
-                
+                type_var.set(values[4])
         #tree = ttk.Treeview(self, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
 
         left_frame = Frame(self, bd=0, width=200, height=400)
@@ -106,11 +111,11 @@ class DiskEditorFrame(tk.Frame):
         size_entry = Entry(right_frame, bg='#A5C9CA', textvariable=size_var, state="readonly", width=25, font=("Arial",11))
         size_entry.grid(row=4, column=1, sticky="w", padx=5, pady=8)
 
-        # type_label = Label(right_frame, bg='#A5C9CA', padx=5, pady=8, fg='#2C3333', text="Type:", font=("Arial", 11))
-        # type_label.grid(row=5, column=0, sticky="w")
-        # type_var = StringVar()
-        # type_entry = Entry(right_frame, bg='#A5C9CA', textvariable=type_var, state="readonly", width=25, font=("Arial",11), fg='#2C3333')
-        # type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
+        type_label = Label(right_frame, bg='#A5C9CA', padx=5, pady=8, fg='#2C3333', text="Type:", font=("Arial", 11))
+        type_label.grid(row=5, column=0, sticky="w")
+        type_var = StringVar()
+        type_entry = Entry(right_frame, bg='#A5C9CA', textvariable=type_var, state="readonly", width=25, font=("Arial",11), fg='#2C3333')
+        type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
         load_tree(tree, '', data)
 
         tree.bind('<ButtonRelease-1>', on_click)

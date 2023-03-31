@@ -55,7 +55,7 @@ def Load_FAT_DATA(Entry, isROOT = False):
     if isROOT == True: # If the Entry is the Root Directory, we load all info of it even it is a hidden file or system file
         for x in Entry.ListEntry:
             res =Load_FAT_DATA(x)
-            if res != '': # If the Entry is not a hidden file or system file, we load it
+            if res != '': #If the Entry is not a hidden file or system file, we load it
                 path.append(res) 
                 
         dict_path = {} # Dictionary of the Entry, Help located the data easier with calling the key
@@ -72,6 +72,7 @@ def Load_FAT_DATA(Entry, isROOT = False):
         dict_path["Time_Created"] = Entry.createTime
         dict_path["Size"] = Entry.size
         dict_path["Children"] = path
+        dict_path["Type"] = "FAT32"
         
     else:
         if Entry.attr[3] == 'DIRECTORY' and Entry.attr[4] == 'NULL' and Entry.attr[5] == 'NULL' and Entry.attr[6] == 'NULL' and Entry.attr[7] == 'NULL' :
@@ -95,6 +96,7 @@ def Load_FAT_DATA(Entry, isROOT = False):
             dict_path["Time_Created"] = Entry.createTime
             dict_path["Size"] = Entry.size
             dict_path["Children"] = path
+            dict_path["Type"] = "FOLDER"
             
         elif Entry.attr[4] == 'VOLUME LABEL' or Entry.attr[5] == 'SYSTEM FILE' or Entry.attr[6] == 'HIDDEN FILE': #If the Entry is a Hidden File or System File
                 return ''
@@ -113,6 +115,8 @@ def Load_FAT_DATA(Entry, isROOT = False):
             dict_path["Date_Created"] = Entry.createDate
             dict_path["Time_Created"] = Entry.createTime
             dict_path["Size"] = Entry.size
+            TypeofFile = Entry.name.split('.')[-1]
+            dict_path["Type"] = TypeofFile + " FILE"
             
             return dict_path
         
@@ -172,6 +176,7 @@ def Load_NTFS_DATA(Entry, isROOT = False):
                 dict_path["Date_Created"] = NTFS_CreateTime.split(" ")[0] #Date of the Entry
                 dict_path["Time_Created"] = NTFS_CreateTime.split(" ")[1] #Time of the Entry
                 dict_path["Size"] = Entry.SizeofusedMFTE #Size of the Entry
+                dict_path["Type"] = "NTFS"
                 Check_Is_Folder = True
                                 
             else: 
@@ -189,7 +194,10 @@ def Load_NTFS_DATA(Entry, isROOT = False):
                 dict_path["Time_Created"] = NTFS_CreateTime.split(" ")[1] #Time of the Entry
                 dict_path["Size"] = Entry.SizeofusedMFTE #Size of the Entry
                 
-                if Entry.attributes[j].content.file_name.attr[4] != "NULL": Check_Is_Folder = True #Check if the Entry is a Folder
+                if Entry.attributes[j].content.file_name.attr[4] != "NULL": 
+                    Check_Is_Folder = True #Check if the Entry is a Folder
+                    dict_path["Type"] = "FOLDER"
+                else: dict_path["Type"] = "FILE"
             break
     
     
@@ -257,5 +265,5 @@ def Get_InFo_From_All_Disk():
                     break
 
     """ Display GUI"""
-    
+    y = 1
     return file_path
