@@ -1,6 +1,7 @@
 import binascii
 
 class BootSectorFAT32:
+    
     # Initiate Value, Atrribute
     def __init__(self) -> None:
         self.bytePerSector = 0
@@ -240,35 +241,6 @@ class Entry: # These just Object to store data of each Entry
                 address += 32
                 
         return None
-
-    def PrintAttribute(self):
-        
-        print("Name: ", self.name)
-        #print("Bit Pattern of Attribute: ", self.attr_Bin)
-        print("Attribute: ", [i for i in self.attr if i != "NULL"])
-        print("Create Time: ", self.createTime)
-        print("Create Date: ", self.createDate)
-        print("Start Cluster: ", self.startCluster)
-        print("Size: ", self.size)
-
-        print('\n')
-
-class RDET:
-    
-    # We Read Each Entry And Store It In List
-    def __init__(self) -> None:
-        self.RootEntry = Entry()
-
-    def PrintRDET(self):
-
-        for i  in self.RootEntry.ListEntry:
-            i.PrintAttribute()
-    
-    def ReadRDET(self,address, drive):
-        
-        self.RootEntry.ReadDET(address, drive)
-        
-        return 0
 
     def PrintAttribute(self):
         

@@ -65,15 +65,13 @@ def Print_Directory_Tree_v2(Entry,i, str, depth = 0):
     
     return None
 
-def Print_Directory_Tree_v3(Entry,i, str, isROOT = False):
+def Print_Directory_Tree_v3(Entry, isROOT = False):
     
     path = []
     
-    #print(str + Entry.name, [i for i in Entry.attr if i != "NULL"],'\n')  
     if isROOT == True:
         for x in Entry.ListEntry:
-            str = ' ' * i 
-            res = Print_Directory_Tree_v3(x, i + 5, str + '|' + '-' * 4)
+            res = Print_Directory_Tree_v3(x)
             if res != '':
                 path.append(res)
                 
@@ -91,12 +89,13 @@ def Print_Directory_Tree_v3(Entry,i, str, isROOT = False):
         dict_path["Time_Created"] = Entry.createTime
         dict_path["Size"] = Entry.size
         dict_path["Children"] = path
+        
     else:
         if Entry.attr[3] == 'DIRECTORY' and Entry.attr[4] == 'NULL' and Entry.attr[5] == 'NULL' and Entry.attr[6] == 'NULL' and Entry.attr[7] == 'NULL' :
             
             for x in Entry.ListEntry:
-                str = ' ' * i 
-                res = Print_Directory_Tree_v3(x, i + 5, str + '|' + '-' * 4)
+
+                res = Print_Directory_Tree_v3(x)
                 if res != '':
                     path.append(res)
                     
@@ -137,12 +136,12 @@ def Print_Directory_Tree_v3(Entry,i, str, isROOT = False):
         
     return dict_path
 
-def Push_To_GUI(Entry, i, str, TypePartition, file_path):
+def Push_To_GUI(Entry, TypePartition, file_path):
     
     if TypePartition == 'FAT32':
-        file_path.append(Print_Directory_Tree_v3(Entry, i, str,True))
+        file_path.append(Print_Directory_Tree_v3(Entry,True))
     else:
-        file_path.append(PrintDirectory_v2(Entry,0,"", True))
+        file_path.append(PrintDirectory_v2(Entry,True))
     
 
 """NTFS"""
@@ -182,7 +181,7 @@ def PrintDirectory(Entry, i, str, isROOT = False):
     
     return None
 
-def PrintDirectory_v2(Entry, i, str, isROOT = False):
+def PrintDirectory_v2(Entry, isROOT = False):
     
     path = []
     NTFS_CreateTime = ""
@@ -228,10 +227,10 @@ def PrintDirectory_v2(Entry, i, str, isROOT = False):
     
     
     for x in Entry.listEntry:
-        str = " " * i
-        res = PrintDirectory_v2(x, i, str)
+        res = PrintDirectory_v2(x)
         if res != '':
             path.append(res)
+            
     if len(path) == 0: path = ""   
     if Check_Is_Folder == True:
         dict_path["Children"] = path
@@ -239,6 +238,7 @@ def PrintDirectory_v2(Entry, i, str, isROOT = False):
     return dict_path
 
 def Get_InFo_From_All_Disk():
+    
     """ Detect all drive """
     drives = ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 
@@ -246,15 +246,14 @@ def Get_InFo_From_All_Disk():
     file_path = []
 
     """ Drive Path """
-    for d in drives:
+    for d in drives: # LOOP Through All Available Drive
         
-        drive = r"\\.\{}".format(d)
+        drive = r"\\.\{}".format(d) # Format The Name That Will Be Used To Open The Drive
     
         """ Boot Sector """
         BOOT = ReadInfoFromBootSector(drive)
         
         if BOOT.FATtype.split(" ")[0] == 'FAT32': 
-            #print ("Reading boot sector FAT32...")
             
             """ Address of FAT1, FAT2, RDET (Including Data part) """
             FAT1_Address = BOOT.sectorBeforeFAT * BOOT.bytePerSector
@@ -265,45 +264,29 @@ def Get_InFo_From_All_Disk():
             RDET = ReadInfoRDET(drive, BOOT, RDET_Address)
             
             """ Print Directory Tree """
-            i = 0
             RDET.RootEntry.name = drive[4:]
-            # RDET.RootEntry.attr[3] = 'DIRECTORY'
-            #print("Directory Tree: \n")
-            #Print_Directory_Tree_v2(RDET.RootEntry, i, "") #Print
             
             #Directory Tree Gui
-            Push_To_GUI(RDET.RootEntry, i, "", "FAT32", file_path)
-            # print(file_path, '\n\n') 
-            
-            
+            Push_To_GUI(RDET.RootEntry, "FAT32", file_path)
+
         else: 
             if drive[4:] == 'C:' : continue
             with open (drive,'rb') as fp:
                 NTFS_BOOT = NTFS.VBR()
                 NTFS_BOOT.ReadVBR(drive,fp)
                 #NTFS_BOOT.PrintVBR()
-                #print("-----------------------")
+                
                 MFTAddress = NTFS_BOOT.FirstClusterInMFT * NTFS_BOOT.BytesPerSector * NTFS_BOOT.SectorPerCluster
                 MFT = NTFS.MFT()
                 MFT.ReadMFT(drive,fp,MFTAddress,NTFS_BOOT.BytesPerSector*NTFS_BOOT.SectorPerCluster)
                 #MFT.PrintMFT()
                 
-            # print("-----------------------")    
             LocatedRoot(MFT)
-            #CheckIsFolder(MFT)
             
             for i in range(len(MFT.MFT)):
                 if (MFT.MFT[i].isROOT == True):
-                    #PrintDirectory(MFT.MFT[i],0,"", True)
-                    Push_To_GUI(MFT.MFT[i], 0, "", "NTFS", file_path)
-                    # data = []
-                    # data.append(PrintDirectory_v2(MFT.MFT[i],0,"", True))
-                    # # y = 1
-                    # # print(data)
-                    # Layer.Display(data)
+                    Push_To_GUI(MFT.MFT[i], "NTFS", file_path)
                     break
-            # data = PrintDirectory_v2
-            # Layer.Display(data)
 
     """ Display GUI"""
     

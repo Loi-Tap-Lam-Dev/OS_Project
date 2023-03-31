@@ -27,7 +27,9 @@ class MainMenuFrame(tk.Frame):
         
         
 class DiskEditorFrame(tk.Frame):
+    
     def __init__(self, parent):
+        
         super().__init__(parent)
         self.config(bg="#E7F6F2")
         self.pack(fill=tk.BOTH, expand=True)
@@ -50,25 +52,7 @@ class DiskEditorFrame(tk.Frame):
                 date_var.set(values[1])
                 time_var.set(values[2])
                 size_var.set(values[3])
-                # if values:
-                #     print('Name:', event.widget.item(node_id)['text'])
-                #     print('Attribute:', values[0])
-                #     print('Date Created:', values[1])
-                #     print('Time Created:', values[2])
-                #     print('Size:', values[3])
-
-
-
-        # Create the content of the disk editor frame
-        # label = tk.Label(self, text="Disk editor frame", font=("Arial", 24))
-        # label.pack(pady=50)
-        # Global area
-        # Create the main window and TreeView widget
-        # root = tk.Tk()
-        # root.title('Directory Tree')
-        # root.geometry('900x600')
-        # root.maxsize(1980, 1024)
-        # root.config(bg="#FFCC98")
+                
         tree = ttk.Treeview(self, columns=['Attribute', 'Date_Created', 'Time_Created', 'Size'])
 
         left_frame = Frame(self, bd=0, width=200, height=400)
@@ -124,15 +108,13 @@ class DiskEditorFrame(tk.Frame):
         type_entry = Entry(right_frame, bg='#A5C9CA', textvariable=type_var, state="readonly", width=25, font=("Arial",11), fg='#2C3333')
         type_entry.grid(row=5, column=1, sticky="w", padx=5, pady=8)
         load_tree(tree, '', data)
-        # tree.pack(fill=tk.BOTH, expand=True)
-        
-        # Bind the click event to the TreeView widget
-        # Bind the click event to the TreeView widget
+
         tree.bind('<ButtonRelease-1>', on_click)
 
         # Create the "Back" button
         back_button = tk.Button(self, text="Back to main menu", font=("Arial", 12), fg='#2C3333', bg='#A5C9CA', command=self.back_button_clicked)
         back_button.pack(pady=10)
+        
     def back_button_clicked(self):
         # Switch back to the main menu frame
         new_frame = MainMenuFrame(self.master)
@@ -141,7 +123,9 @@ class DiskEditorFrame(tk.Frame):
                 
 
 class MainApplication(tk.Tk):
+    
     def __init__(self):
+        
         super().__init__()
         self.title("Main Menu")
         self.geometry("900x600")
@@ -150,6 +134,7 @@ class MainApplication(tk.Tk):
         self.main_menu_frame = MainMenuFrame(self)
 
 def main():
+    
     app = MainApplication()
     app.mainloop()
 
